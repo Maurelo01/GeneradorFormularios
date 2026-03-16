@@ -1,0 +1,669 @@
+import java_cup.runtime.*;
+import java.util.ArrayList;
+
+parser code
+{:
+    public static class ErrorSintactico
+    {
+        public String lexema;
+        public int linea;
+        public int columna;
+        public String descripcion;
+        public ErrorSintactico(String lexema, int linea, int columna, String descripcion)
+        {
+            this.lexema = lexema;
+            this.linea = linea;
+            this.columna = columna;
+            this.descripcion = descripcion;
+        }
+    }
+
+    public ArrayList<ErrorSintactico> listaErrores = new ArrayList<>();
+
+    @Override
+    public void syntax_error(Symbol cur_token)
+    {
+        String lexema = cur_token.value != null ? cur_token.value.toString() : "EOF";
+        int linea = cur_token.left;
+        int columna = cur_token.right;
+        String descripcion = "Error sintáctico: token inesperado '" + lexema + "'";
+        listaErrores.add(new ErrorSintactico(lexema, linea, columna, descripcion));
+        System.err.println("Error Sintáctico en línea " + linea + ", columna " + columna + ": " + descripcion);
+    }
+
+    @Override
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception
+    {
+        String lexema = cur_token.value != null ? cur_token.value.toString() : "EOF";
+        listaErrores.add(new ErrorSintactico(lexema, cur_token.left, cur_token.right, "Error sintáctico irrecuperable. Estructura mal formada."));
+    }
+:}
+
+/***** CÓDIGO DE ACCIONES Y CLASES AUXILIARES *****/
+action code
+{:
+    /*** Clase base para nodos del AST ***/
+    class NodoAST
+    {
+        String tipo;
+        
+        public NodoAST(String tipo)
+        {
+            this.tipo = tipo;
+        }
+    }
+    
+    /*** Clase para representar atributos de componentes ***/
+    class Atributo
+    {
+        String nombre;
+        Object valor;
+        
+        public Atributo(String n, Object v)
+        {
+            nombre = n;
+            valor = v;
+        }
+    }
+:}
+
+/***** TERMINALES *****/
+/***** TIPOS DE DATOS *****/
+terminal String TYPE_NUMBER;
+terminal String TYPE_STRING;
+terminal String TYPE_SPECIAL;
+
+/***** COMPONENTES ESTRUCTURALES *****/
+terminal String SECTION;
+terminal String TABLE;
+terminal String TEXT;
+
+/***** TIPOS DE PREGUNTAS *****/
+terminal String OPEN_QUESTION;
+terminal String DROP_QUESTION;
+terminal String SELECT_QUESTION;
+terminal String MULTIPLE_QUESTION;
+
+/***** ESTRUCTURAS DE CONTROL *****/
+terminal String IF;
+terminal String ELSE;
+terminal String WHILE;
+terminal String DO;
+terminal String FOR;
+
+/***** ATRIBUTOS RESERVADOS *****/
+terminal String ATTR_WIDTH;
+terminal String ATTR_HEIGHT;
+terminal String ATTR_POINTX;
+terminal String ATTR_POINTY;
+terminal String ATTR_ORIENTATION;
+terminal String ATTR_ELEMENTS;
+terminal String ATTR_STYLES;
+terminal String ATTR_CONTENT;
+terminal String ATTR_LABEL;
+terminal String ATTR_OPTIONS;
+terminal String ATTR_CORRECT;
+
+/***** ENUMS Y CONSTANTES DE ESTILO *****/
+terminal String ENUM_VERTICAL;
+terminal String ENUM_HORIZONTAL;
+terminal String ENUM_MONO;
+terminal String ENUM_SANS_SERIF;
+terminal String ENUM_CURSIVE;
+terminal String ENUM_LINE;
+terminal String ENUM_DOTTED;
+terminal String ENUM_DOUBLE;
+
+/***** COLORES PREDEFINIDOS *****/
+terminal String COLOR_RED;
+terminal String COLOR_BLUE;
+terminal String COLOR_GREEN;
+terminal String COLOR_PURPLE;
+terminal String COLOR_SKY;
+terminal String COLOR_YELLOW;
+terminal String COLOR_BLACK;
+terminal String COLOR_WHITE;
+
+/***** VALORES DE COLORES *****/
+terminal String VAL_COLOR_HEX;
+terminal String VAL_COLOR_RGB;
+terminal String VAL_COLOR_HSL;
+
+/***** FUNCIONES ESPECIALES *****/
+terminal String FUNC_DRAW;
+terminal String FUNC_POKEMON;
+
+/***** OPERADORES ARITMÉTICOS *****/
+terminal String MAS;
+terminal String MENOS;
+terminal String POR;
+terminal String DIV;
+terminal String POTENCIA;
+terminal String MODULO;
+
+/***** OPERADORES RELACIONALES Y LÓGICOS *****/
+terminal String IGUALDAD;
+terminal String DIFERENTE;
+terminal String MAYOR;
+terminal String MENOR;
+terminal String MAYOR_IGUAL;
+terminal String MENOR_IGUAL;
+terminal String AND;
+terminal String OR;
+terminal String NOT;
+terminal String IGUAL_ASIG;
+
+/***** SIGNOS DE AGRUPACIÓN Y PUNTUACIÓN *****/
+terminal String PAR_IZQ;
+terminal String PAR_DER;
+terminal String CORCHETE_IZQ;
+terminal String CORCHETE_DER;
+terminal String LLAVE_IZQ;
+terminal String LLAVE_DER;
+terminal String COMA;
+terminal String DOS_PUNTOS;
+terminal String COMODIN;
+
+/***** SÍMBOLOS ESPECIALES PARA CICLOS *****/
+terminal String PUNTO_Y_COMA;
+terminal String IN;
+terminal String PUNTO_PUNTO;
+
+/***** LITERALES *****/
+terminal String CADENA;
+terminal String ID;
+terminal Double DECIMAL;
+terminal Double ENTERO;
+
+/***** NO TERMINALES *****/
+/***** ESTRUCTURA GENERAL *****/
+non terminal NodoAST inicio;
+non terminal NodoAST instruccion;
+non terminal ArrayList<NodoAST> lista_instrucciones;
+
+/***** DECLARACIÓN Y ASIGNACIÓN *****/
+non terminal NodoAST declaracion;
+non terminal NodoAST asignacion;
+
+/***** ESTRUCTURAS DE CONTROL *****/
+non terminal NodoAST estructura_control;
+non terminal NodoAST if_stmt;
+non terminal NodoAST while_stmt;
+non terminal NodoAST do_while_stmt;
+non terminal NodoAST for_stmt;
+
+/***** COMPONENTES PRINCIPALES *****/
+non terminal NodoAST componente;
+non terminal NodoAST seccion;
+non terminal NodoAST tabla;
+non terminal NodoAST texto;
+non terminal NodoAST pregunta;
+
+/***** ATRIBUTOS Y ESTILOS *****/
+non terminal ArrayList<Atributo> lista_atributos;
+non terminal Atributo atributo;
+non terminal ArrayList<Atributo> lista_estilos;
+non terminal Atributo estilo;
+
+/***** ELEMENTOS Y ARREGLOS *****/
+non terminal ArrayList<NodoAST> lista_elementos;
+non terminal ArrayList<Object> lista_arreglo;
+non terminal Object elemento_arreglo;
+
+/***** EXPRESIONES Y VALORES *****/
+non terminal Object expresion;
+non terminal Object valor_color;
+non terminal Object valor_enum;
+
+/***** FUNCIONES ESPECIALES *****/
+non terminal NodoAST funcion_especial;
+
+/***** PRECEDENCIA DE OPERADORES *****/
+// De menor a mayor precedencia
+precedence left OR;
+precedence left AND;
+precedence right NOT;
+precedence left IGUALDAD;
+precedence left DIFERENTE;
+precedence left MENOR;
+precedence left MAYOR;
+precedence left MENOR_IGUAL;
+precedence left MAYOR_IGUAL;
+precedence left MAS;
+precedence left MENOS;
+precedence left POR;
+precedence left DIV;
+precedence left POTENCIA;
+precedence left MODULO;
+
+/***** PUNTO DE INICIO *****/
+start with inicio;
+
+/***** REGLAS DE LA GRAMÁTICA *****/
+/***** ESTRUCTURA GENERAL *****/
+inicio ::=
+    lista_instrucciones:li
+    {:
+        RESULT = new NodoAST("RAIZ");
+    :}
+    ;
+
+lista_instrucciones ::=
+    lista_instrucciones:li instruccion:i
+    {:
+        li.add(i);
+        RESULT = li;
+    :}
+    | instruccion:i
+    {:
+        ArrayList<NodoAST> lista = new ArrayList<>();
+        lista.add(i);
+        RESULT = lista;
+    :}
+    ;
+
+instruccion ::=
+    declaracion:d
+    {:
+        RESULT = d;
+    :}
+    | asignacion:a
+    {:
+        RESULT = a;
+    :}
+    | componente:c
+    {:
+        RESULT = c;
+    :}
+    | estructura_control:e
+    {:
+        RESULT = e;
+    :}
+    | funcion_especial:f
+    {:
+        RESULT = f;
+    :}
+    | error
+    {:
+        RESULT = new NodoAST("ERROR");
+    :}
+    ;
+
+/***** DECLARACIÓN Y ASIGNACIÓN DE VARIABLES *****/
+declaracion ::=
+    TYPE_NUMBER ID:id IGUAL_ASIG expresion:e
+    {:
+        RESULT = new NodoAST("DECLARACION_NUM");
+    :}
+    | TYPE_NUMBER ID:id
+    {:
+        RESULT = new NodoAST("DECLARACION_NUM");
+    :}
+    | TYPE_STRING ID:id IGUAL_ASIG expresion:e
+    {:
+        RESULT = new NodoAST("DECLARACION_STR");
+    :}
+    | TYPE_STRING ID:id
+    {:
+        RESULT = new NodoAST("DECLARACION_STR");
+    :}
+    | TYPE_SPECIAL ID:id IGUAL_ASIG componente:c
+    {:
+        RESULT = new NodoAST("DECLARACION_SPEC");
+    :}
+    ;
+
+asignacion ::=
+    ID:id IGUAL_ASIG expresion:e
+    {:
+        RESULT = new NodoAST("ASIGNACION");
+    :}
+    ;
+
+/***** ESTRUCTURAS DE CONTROL *****/
+estructura_control ::=
+    if_stmt:i
+    {:
+        RESULT = i;
+    :}
+    | while_stmt:w
+    {:
+        RESULT = w;
+    :}
+    | do_while_stmt:d
+    {:
+        RESULT = d;
+    :}
+    | for_stmt:f
+    {:
+        RESULT = f;
+    :}
+    ;
+
+if_stmt ::=
+    IF PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
+    {:
+        RESULT = new NodoAST("IF");
+    :}
+    | IF PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER ELSE LLAVE_IZQ lista_instrucciones LLAVE_DER
+    {:
+        RESULT = new NodoAST("IF_ELSE");
+    :}
+    ;
+
+while_stmt ::=
+    WHILE PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
+    {:
+        RESULT = new NodoAST("WHILE");
+    :}
+    ;
+
+do_while_stmt ::=
+    DO LLAVE_IZQ lista_instrucciones LLAVE_DER WHILE PAR_IZQ expresion PAR_DER
+    {:
+        RESULT = new NodoAST("DO_WHILE");
+    :}
+    ;
+
+for_stmt ::=
+    FOR PAR_IZQ asignacion PUNTO_Y_COMA expresion PUNTO_Y_COMA asignacion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
+    {:
+        RESULT = new NodoAST("FOR_CLASSIC");
+    :}
+    | FOR PAR_IZQ ID IN expresion PUNTO_PUNTO expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
+    {:
+        RESULT = new NodoAST("FOR_RANGE");
+    :}
+    ;
+
+/***** COMPONENTES PRINCIPALES *****/
+componente ::=
+    seccion:s
+    {:
+        RESULT = s;
+    :}
+    | tabla:t
+    {:
+        RESULT = t;
+    :}
+    | texto:tx
+    {:
+        RESULT = tx;
+    :}
+    | pregunta:p
+    {:
+        RESULT = p;
+    :}
+    ;
+
+seccion ::=
+    SECTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
+    {:
+        RESULT = new NodoAST("SECTION");
+    :}
+    ;
+
+tabla ::=
+    TABLE CORCHETE_IZQ lista_atributos:la CORCHETE_DER
+    {:
+        RESULT = new NodoAST("TABLE");
+    :}
+    ;
+
+texto ::=
+    TEXT CORCHETE_IZQ lista_atributos:la CORCHETE_DER
+    {:
+        RESULT = new NodoAST("TEXT");
+    :}
+    ;
+
+pregunta ::=
+    OPEN_QUESTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
+    {:
+        RESULT = new NodoAST("OPEN_QUESTION");
+    :}
+    | DROP_QUESTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
+    {:
+        RESULT = new NodoAST("DROP_QUESTION");
+    :}
+    | SELECT_QUESTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
+    {:
+        RESULT = new NodoAST("SELECT_QUESTION");
+    :}
+    | MULTIPLE_QUESTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
+    {:
+        RESULT = new NodoAST("MULTIPLE_QUESTION");
+    :}
+    ;
+
+/***** ATRIBUTOS *****/
+lista_atributos ::=
+    lista_atributos:la COMA atributo:a
+    {:
+        la.add(a);
+        RESULT = la;
+    :}
+    | atributo:a
+    {:
+        ArrayList<Atributo> la = new ArrayList<>();
+        la.add(a);
+        RESULT = la;
+    :}
+    ;
+
+atributo ::=
+    ATTR_WIDTH DOS_PUNTOS expresion:e
+    {:
+        RESULT = new Atributo("width", e);
+    :}
+    | ATTR_HEIGHT DOS_PUNTOS expresion:e
+    {:
+        RESULT = new Atributo("height", e);
+    :}
+    | ATTR_POINTX DOS_PUNTOS expresion:e
+    {:
+        RESULT = new Atributo("pointX", e);
+    :}
+    | ATTR_POINTY DOS_PUNTOS expresion:e
+    {:
+        RESULT = new Atributo("pointY", e);
+    :}
+    | ATTR_ORIENTATION DOS_PUNTOS valor_enum:e
+    {:
+        RESULT = new Atributo("orientation", e);
+    :}
+    | ATTR_CONTENT DOS_PUNTOS expresion:e
+    {:
+        RESULT = new Atributo("content", e);
+    :}
+    | ATTR_LABEL DOS_PUNTOS expresion:e
+    {:
+        RESULT = new Atributo("label", e);
+    :}
+    | ATTR_CORRECT DOS_PUNTOS expresion:e
+    {:
+        RESULT = new Atributo("correct", e);
+    :}
+    | ATTR_OPTIONS DOS_PUNTOS LLAVE_IZQ lista_arreglo:la LLAVE_DER
+    {:
+        RESULT = new Atributo("options", la);
+    :}
+    | ATTR_CORRECT DOS_PUNTOS LLAVE_IZQ lista_arreglo:la LLAVE_DER
+    {:
+        RESULT = new Atributo("correct_multiple", la);
+    :}
+    | ATTR_ELEMENTS DOS_PUNTOS LLAVE_IZQ lista_elementos:le LLAVE_DER
+    {:
+        RESULT = new Atributo("elements", le);
+    :}
+    | ATTR_ELEMENTS DOS_PUNTOS CORCHETE_IZQ lista_arreglo:la CORCHETE_DER
+    {:
+        RESULT = new Atributo("elements_table", la);
+    :}
+    | ATTR_STYLES CORCHETE_IZQ lista_estilos:ls CORCHETE_DER
+    {:
+        RESULT = new Atributo("styles", ls);
+    :}
+    ;
+
+/***** LISTAS AUXILIARES *****/
+lista_elementos ::=
+    lista_elementos:le COMA componente:c
+    {:
+        le.add(c);
+        RESULT = le;
+    :}
+    | componente:c
+    {:
+        ArrayList<NodoAST> le = new ArrayList<>();
+        le.add(c);
+        RESULT = le;
+    :}
+    ;
+
+lista_arreglo ::=
+    lista_arreglo:la COMA elemento_arreglo:ea
+    {:
+        la.add(ea);
+        RESULT = la;
+    :}
+    | elemento_arreglo:ea
+    {:
+        ArrayList<Object> la = new ArrayList<>();
+        la.add(ea);
+        RESULT = la;
+    :}
+    | /* Vacío para arreglos {} vacios */
+    {:
+        RESULT = new ArrayList<Object>();
+    :}
+    ;
+
+elemento_arreglo ::=
+    expresion:e
+    {:
+        RESULT = e;
+    :}
+    | CORCHETE_IZQ lista_elementos:le CORCHETE_DER
+    {:
+        RESULT = le;
+    :}
+    ;
+
+/***** ESTILOS *****/
+lista_estilos ::=
+    lista_estilos:ls COMA estilo:e
+    {:
+        ls.add(e);
+        RESULT = ls;
+    :}
+    | estilo:e
+    {:
+        ArrayList<Atributo> ls = new ArrayList<>();
+        ls.add(e);
+        RESULT = ls;
+    :}
+    ;
+
+estilo ::=
+    CADENA:c DOS_PUNTOS valor_color:vc
+    {:
+        RESULT = new Atributo(c.toString(), vc);
+    :}
+    | CADENA:c DOS_PUNTOS valor_enum:ve
+    {:
+        RESULT = new Atributo(c.toString(), ve);
+    :}
+    | CADENA:c DOS_PUNTOS expresion:e
+    {:
+        RESULT = new Atributo(c.toString(), e);
+    :}
+    | CADENA:c DOS_PUNTOS PAR_IZQ expresion:num COMA valor_enum:tipo COMA valor_color:vc PAR_DER
+    {:
+        RESULT = new Atributo("border", "borde_complejo");
+    :}
+    ;
+
+/***** EXPRESIONES Y VALORES *****/
+expresion ::=
+    expresion MAS expresion
+    | expresion MENOS expresion
+    | expresion POR expresion
+    | expresion DIV expresion
+    | expresion POTENCIA expresion
+    | expresion MODULO expresion
+    | expresion MAYOR expresion
+    | expresion MENOR expresion
+    | expresion MAYOR_IGUAL expresion
+    | expresion MENOR_IGUAL expresion
+    | expresion IGUALDAD expresion
+    | expresion DIFERENTE expresion
+    | expresion AND expresion
+    | expresion OR expresion
+    | NOT expresion
+    | PAR_IZQ expresion PAR_DER
+    | ENTERO
+    {:
+        RESULT = "NUMERO";
+    :}
+    | DECIMAL
+    {:
+        RESULT = "NUMERO";
+    :}
+    | CADENA
+    {:
+        RESULT = "CADENA";
+    :}
+    | ID
+    {:
+        RESULT = "VARIABLE";
+    :}
+    | COMODIN
+    {:
+        RESULT = "COMODIN";
+    :}
+    | FUNC_POKEMON PAR_IZQ expresion COMA expresion COMA expresion PAR_DER
+    {:
+        RESULT = "API_CALL";
+    :}
+    ;
+
+valor_color ::=
+    VAL_COLOR_HEX
+    | VAL_COLOR_RGB
+    | VAL_COLOR_HSL
+    | COLOR_RED
+    | COLOR_BLUE
+    | COLOR_GREEN
+    | COLOR_PURPLE
+    | COLOR_SKY
+    | COLOR_YELLOW
+    | COLOR_BLACK
+    | COLOR_WHITE
+    ;
+
+valor_enum ::=
+    ENUM_VERTICAL
+    | ENUM_HORIZONTAL
+    | ENUM_MONO
+    | ENUM_SANS_SERIF
+    | ENUM_CURSIVE
+    | ENUM_LINE
+    | ENUM_DOTTED
+    | ENUM_DOUBLE
+    ;
+
+/***** FUNCIONES ESPECIALES *****/
+funcion_especial ::=
+    ID:id FUNC_DRAW PAR_IZQ lista_arreglo:args PAR_DER
+    {:
+        if (args.isEmpty())
+        {
+            RESULT = new NodoAST("DRAW");
+        }
+        else
+        {
+            RESULT = new NodoAST("DRAW_WITH_ARGS");
+        }
+    :}
+    ;

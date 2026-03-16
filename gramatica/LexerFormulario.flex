@@ -151,6 +151,20 @@ ColorHSL = <{EspaciosEnBlanco}*{Entero}{EspaciosEnBlanco}*,{EspaciosEnBlanco}*{E
     return symbol(sym.FOR, yytext());
 }
 
+/***** CICLOS FOR *****/
+";"
+{
+    return symbol(sym.PUNTO_Y_COMA, yytext());
+}
+"in"
+{
+    return symbol(sym.IN, yytext());
+}
+".."
+{
+    return symbol(sym.PUNTO_PUNTO, yytext());
+}
+
 /***** ATRIBUTOS RESERVADOS *****/
 "width"
 {
