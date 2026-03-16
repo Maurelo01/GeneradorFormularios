@@ -487,4 +487,5 @@ ColorHSL = <{EspaciosEnBlanco}*{Entero}{EspaciosEnBlanco}*,{EspaciosEnBlanco}*{E
 .
 {
     reportarError(yytext(), "Caracter no válido en el lenguaje");
+    return symbol(sym.error, yytext());
 }

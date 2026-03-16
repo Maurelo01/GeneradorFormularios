@@ -1059,7 +1059,6 @@ public class LexerFormulario implements java_cup.runtime.Scanner {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1:
             { reportarError(yytext(), "Caracter no válido en el lenguaje");
-    return symbol(sym.error, yytext());
             }
           // fall through
           case 83: break;

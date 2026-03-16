@@ -9,6 +9,7 @@ parser code
         public int linea;
         public int columna;
         public String descripcion;
+        
         public ErrorSintactico(String lexema, int linea, int columna, String descripcion)
         {
             this.lexema = lexema;
@@ -17,7 +18,6 @@ parser code
             this.descripcion = descripcion;
         }
     }
-
     public ArrayList<ErrorSintactico> listaErrores = new ArrayList<>();
 
     @Override
@@ -27,6 +27,7 @@ parser code
         int linea = cur_token.left;
         int columna = cur_token.right;
         String descripcion = "Error sintáctico: token inesperado '" + lexema + "'";
+        
         listaErrores.add(new ErrorSintactico(lexema, linea, columna, descripcion));
         System.err.println("Error Sintáctico en línea " + linea + ", columna " + columna + ": " + descripcion);
     }
@@ -39,10 +40,8 @@ parser code
     }
 :}
 
-/***** CÓDIGO DE ACCIONES Y CLASES AUXILIARES *****/
 action code
 {:
-    /*** Clase base para nodos del AST ***/
     class NodoAST
     {
         String tipo;
@@ -52,8 +51,7 @@ action code
             this.tipo = tipo;
         }
     }
-    
-    /*** Clase para representar atributos de componentes ***/
+
     class Atributo
     {
         String nombre;
@@ -73,25 +71,25 @@ terminal String TYPE_NUMBER;
 terminal String TYPE_STRING;
 terminal String TYPE_SPECIAL;
 
-/***** COMPONENTES ESTRUCTURALES *****/
+/***** T COMPONENTES ESTRUCTURALES *****/
 terminal String SECTION;
 terminal String TABLE;
 terminal String TEXT;
 
-/***** TIPOS DE PREGUNTAS *****/
+/***** T TIPOS DE PREGUNTAS *****/
 terminal String OPEN_QUESTION;
 terminal String DROP_QUESTION;
 terminal String SELECT_QUESTION;
 terminal String MULTIPLE_QUESTION;
 
-/***** ESTRUCTURAS DE CONTROL *****/
+/***** T ESTRUCTURAS DE CONTROL *****/
 terminal String IF;
 terminal String ELSE;
 terminal String WHILE;
 terminal String DO;
 terminal String FOR;
 
-/***** ATRIBUTOS RESERVADOS *****/
+/***** T ATRIBUTOS RESERVADOS *****/
 terminal String ATTR_WIDTH;
 terminal String ATTR_HEIGHT;
 terminal String ATTR_POINTX;
@@ -104,7 +102,7 @@ terminal String ATTR_LABEL;
 terminal String ATTR_OPTIONS;
 terminal String ATTR_CORRECT;
 
-/***** ENUMS Y CONSTANTES DE ESTILO *****/
+/***** T ENUMS Y CONSTANTES DE ESTILO *****/
 terminal String ENUM_VERTICAL;
 terminal String ENUM_HORIZONTAL;
 terminal String ENUM_MONO;
@@ -114,7 +112,7 @@ terminal String ENUM_LINE;
 terminal String ENUM_DOTTED;
 terminal String ENUM_DOUBLE;
 
-/***** COLORES PREDEFINIDOS *****/
+/***** T COLORES PREDEFINIDOS *****/
 terminal String COLOR_RED;
 terminal String COLOR_BLUE;
 terminal String COLOR_GREEN;
@@ -124,16 +122,16 @@ terminal String COLOR_YELLOW;
 terminal String COLOR_BLACK;
 terminal String COLOR_WHITE;
 
-/***** VALORES DE COLORES *****/
+/***** T VALORES DE COLORES *****/
 terminal String VAL_COLOR_HEX;
 terminal String VAL_COLOR_RGB;
 terminal String VAL_COLOR_HSL;
 
-/***** FUNCIONES ESPECIALES *****/
+/***** T FUNCIONES ESPECIALES *****/
 terminal String FUNC_DRAW;
 terminal String FUNC_POKEMON;
 
-/***** OPERADORES ARITMÉTICOS *****/
+/***** T OPERADORES ARITMÉTICOS *****/
 terminal String MAS;
 terminal String MENOS;
 terminal String POR;
@@ -141,7 +139,7 @@ terminal String DIV;
 terminal String POTENCIA;
 terminal String MODULO;
 
-/***** OPERADORES RELACIONALES Y LÓGICOS *****/
+/***** T OPERADORES RELACIONALES Y LÓGICOS *****/
 terminal String IGUALDAD;
 terminal String DIFERENTE;
 terminal String MAYOR;
@@ -153,7 +151,7 @@ terminal String OR;
 terminal String NOT;
 terminal String IGUAL_ASIG;
 
-/***** SIGNOS DE AGRUPACIÓN Y PUNTUACIÓN *****/
+/***** T SIGNOS DE AGRUPACIÓN Y PUNTUACIÓN *****/
 terminal String PAR_IZQ;
 terminal String PAR_DER;
 terminal String CORCHETE_IZQ;
@@ -164,58 +162,58 @@ terminal String COMA;
 terminal String DOS_PUNTOS;
 terminal String COMODIN;
 
-/***** SÍMBOLOS ESPECIALES PARA CICLOS *****/
+/***** T SÍMBOLOS ESPECIALES PARA CICLOS *****/
 terminal String PUNTO_Y_COMA;
 terminal String IN;
 terminal String PUNTO_PUNTO;
 
-/***** LITERALES *****/
+/***** T LITERALES *****/
 terminal String CADENA;
 terminal String ID;
 terminal Double DECIMAL;
 terminal Double ENTERO;
 
 /***** NO TERMINALES *****/
-/***** ESTRUCTURA GENERAL *****/
+/***** N ESTRUCTURA GENERAL *****/
 non terminal NodoAST inicio;
 non terminal NodoAST instruccion;
 non terminal ArrayList<NodoAST> lista_instrucciones;
 
-/***** DECLARACIÓN Y ASIGNACIÓN *****/
+/***** N DECLARACIÓN Y ASIGNACIÓN *****/
 non terminal NodoAST declaracion;
 non terminal NodoAST asignacion;
 
-/***** ESTRUCTURAS DE CONTROL *****/
+/***** N ESTRUCTURAS DE CONTROL *****/
 non terminal NodoAST estructura_control;
 non terminal NodoAST if_stmt;
 non terminal NodoAST while_stmt;
 non terminal NodoAST do_while_stmt;
 non terminal NodoAST for_stmt;
 
-/***** COMPONENTES PRINCIPALES *****/
+/***** N COMPONENTES PRINCIPALES *****/
 non terminal NodoAST componente;
 non terminal NodoAST seccion;
 non terminal NodoAST tabla;
 non terminal NodoAST texto;
 non terminal NodoAST pregunta;
 
-/***** ATRIBUTOS Y ESTILOS *****/
+/***** N ATRIBUTOS Y ESTILOS *****/
 non terminal ArrayList<Atributo> lista_atributos;
 non terminal Atributo atributo;
 non terminal ArrayList<Atributo> lista_estilos;
 non terminal Atributo estilo;
 
-/***** ELEMENTOS Y ARREGLOS *****/
+/***** N ELEMENTOS Y ARREGLOS *****/
 non terminal ArrayList<NodoAST> lista_elementos;
 non terminal ArrayList<Object> lista_arreglo;
 non terminal Object elemento_arreglo;
 
-/***** EXPRESIONES Y VALORES *****/
+/***** N EXPRESIONES Y VALORES *****/
 non terminal Object expresion;
 non terminal Object valor_color;
 non terminal Object valor_enum;
 
-/***** FUNCIONES ESPECIALES *****/
+/***** N FUNCIONES ESPECIALES *****/
 non terminal NodoAST funcion_especial;
 
 /***** PRECEDENCIA DE OPERADORES *****/
@@ -239,7 +237,6 @@ precedence left MODULO;
 /***** PUNTO DE INICIO *****/
 start with inicio;
 
-/***** REGLAS DE LA GRAMÁTICA *****/
 /***** ESTRUCTURA GENERAL *****/
 inicio ::=
     lista_instrucciones:li
@@ -283,10 +280,6 @@ instruccion ::=
     {:
         RESULT = f;
     :}
-    | error
-    {:
-        RESULT = new NodoAST("ERROR");
-    :}
     ;
 
 /***** DECLARACIÓN Y ASIGNACIÓN DE VARIABLES *****/
@@ -311,6 +304,18 @@ declaracion ::=
     {:
         RESULT = new NodoAST("DECLARACION_SPEC");
     :}
+    | TYPE_NUMBER error
+    {:
+        RESULT = new NodoAST("DECLARACION_NUM_ERROR");
+    :}
+    | TYPE_STRING error
+    {:
+        RESULT = new NodoAST("DECLARACION_STR_ERROR");
+    :}
+    | TYPE_SPECIAL error
+    {:
+        RESULT = new NodoAST("DECLARACION_SPEC_ERROR");
+    :}
     ;
 
 asignacion ::=
@@ -318,7 +323,11 @@ asignacion ::=
     {:
         RESULT = new NodoAST("ASIGNACION");
     :}
-    ;
+    | ID:id IGUAL_ASIG error
+    {:
+        RESULT = new NodoAST("ASIGNACION_ERROR");
+    :}
+        ;
 
 /***** ESTRUCTURAS DE CONTROL *****/
 estructura_control ::=
@@ -340,6 +349,7 @@ estructura_control ::=
     :}
     ;
 
+/***** IF *****/
 if_stmt ::=
     IF PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
     {:
@@ -349,22 +359,49 @@ if_stmt ::=
     {:
         RESULT = new NodoAST("IF_ELSE");
     :}
+    | IF PAR_IZQ error PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
+    {:
+        RESULT = new NodoAST("IF_ERROR_CONDICION");
+    :}
+    | IF PAR_IZQ expresion PAR_DER LLAVE_IZQ error LLAVE_DER
+    {:
+        RESULT = new NodoAST("IF_ERROR_CUERPO");
+    :}
     ;
 
+/***** WHILE *****/
 while_stmt ::=
     WHILE PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
     {:
         RESULT = new NodoAST("WHILE");
     :}
+    | WHILE PAR_IZQ error PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
+    {:
+        RESULT = new NodoAST("WHILE_ERROR_CONDICION");
+    :}
+    | WHILE PAR_IZQ expresion PAR_DER LLAVE_IZQ error LLAVE_DER
+    {:
+        RESULT = new NodoAST("WHILE_ERROR_CUERPO");
+    :}
     ;
 
+/***** DO-WHILE *****/
 do_while_stmt ::=
     DO LLAVE_IZQ lista_instrucciones LLAVE_DER WHILE PAR_IZQ expresion PAR_DER
     {:
         RESULT = new NodoAST("DO_WHILE");
     :}
+    | DO LLAVE_IZQ error LLAVE_DER WHILE PAR_IZQ expresion PAR_DER
+    {:
+        RESULT = new NodoAST("DO_WHILE_ERROR_CUERPO");
+    :}
+    | DO LLAVE_IZQ lista_instrucciones LLAVE_DER WHILE PAR_IZQ error PAR_DER
+    {:
+        RESULT = new NodoAST("DO_WHILE_ERROR_CONDICION");
+    :}
     ;
 
+/***** FOR *****/
 for_stmt ::=
     FOR PAR_IZQ asignacion PUNTO_Y_COMA expresion PUNTO_Y_COMA asignacion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
     {:
@@ -373,6 +410,14 @@ for_stmt ::=
     | FOR PAR_IZQ ID IN expresion PUNTO_PUNTO expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
     {:
         RESULT = new NodoAST("FOR_RANGE");
+    :}
+    | FOR PAR_IZQ error PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
+    {:
+        RESULT = new NodoAST("FOR_ERROR_CONDICION");
+    :}
+    | FOR PAR_IZQ asignacion PUNTO_Y_COMA expresion PUNTO_Y_COMA asignacion PAR_DER LLAVE_IZQ error LLAVE_DER
+    {:
+        RESULT = new NodoAST("FOR_ERROR_CUERPO");
     :}
     ;
 
@@ -396,27 +441,43 @@ componente ::=
     :}
     ;
 
+/***** SECCIÓN *****/
 seccion ::=
     SECTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
         RESULT = new NodoAST("SECTION");
     :}
+    | SECTION CORCHETE_IZQ error CORCHETE_DER
+    {:
+        RESULT = new NodoAST("SECTION_ERROR_ATRIBUTOS");
+    :}
     ;
 
+/***** TABLA *****/
 tabla ::=
     TABLE CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
         RESULT = new NodoAST("TABLE");
     :}
+    | TABLE CORCHETE_IZQ error CORCHETE_DER
+    {:
+        RESULT = new NodoAST("TABLE_ERROR_ATRIBUTOS");
+    :}
     ;
 
+/***** TEXTO *****/
 texto ::=
     TEXT CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
         RESULT = new NodoAST("TEXT");
     :}
+    | TEXT CORCHETE_IZQ error CORCHETE_DER
+    {:
+        RESULT = new NodoAST("TEXT_ERROR_ATRIBUTOS");
+    :}
     ;
 
+/***** PREGUNTA *****/
 pregunta ::=
     OPEN_QUESTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
@@ -434,6 +495,22 @@ pregunta ::=
     {:
         RESULT = new NodoAST("MULTIPLE_QUESTION");
     :}
+    | OPEN_QUESTION CORCHETE_IZQ error CORCHETE_DER
+    {:
+        RESULT = new NodoAST("OPEN_QUESTION_ERROR");
+    :}
+    | DROP_QUESTION CORCHETE_IZQ error CORCHETE_DER
+    {:
+        RESULT = new NodoAST("DROP_QUESTION_ERROR");
+    :}
+    | SELECT_QUESTION CORCHETE_IZQ error CORCHETE_DER
+    {:
+        RESULT = new NodoAST("SELECT_QUESTION_ERROR");
+    :}
+    | MULTIPLE_QUESTION CORCHETE_IZQ error CORCHETE_DER
+    {:
+        RESULT = new NodoAST("MULTIPLE_QUESTION_ERROR");
+    :}
     ;
 
 /***** ATRIBUTOS *****/
@@ -447,6 +524,10 @@ lista_atributos ::=
     {:
         ArrayList<Atributo> la = new ArrayList<>();
         la.add(a);
+        RESULT = la;
+    :}
+    | lista_atributos:la COMA error
+    {: 
         RESULT = la;
     :}
     ;
@@ -628,6 +709,7 @@ expresion ::=
     :}
     ;
 
+/***** VALORES DE COLORES *****/
 valor_color ::=
     VAL_COLOR_HEX
     | VAL_COLOR_RGB
@@ -642,6 +724,7 @@ valor_color ::=
     | COLOR_WHITE
     ;
 
+/***** VALORES DE ENUMS *****/
 valor_enum ::=
     ENUM_VERTICAL
     | ENUM_HORIZONTAL
@@ -657,7 +740,7 @@ valor_enum ::=
 funcion_especial ::=
     ID:id FUNC_DRAW PAR_IZQ lista_arreglo:args PAR_DER
     {:
-        if (args.isEmpty())
+        if (args.isEmpty()) 
         {
             RESULT = new NodoAST("DRAW");
         }
@@ -666,4 +749,4 @@ funcion_especial ::=
             RESULT = new NodoAST("DRAW_WITH_ARGS");
         }
     :}
-    ;
+;
