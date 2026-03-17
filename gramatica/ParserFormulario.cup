@@ -1,5 +1,6 @@
 import java_cup.runtime.*;
 import java.util.ArrayList;
+import com.example.pokemonformularios.ast.*;
 
 parser code
 {:
@@ -42,13 +43,19 @@ parser code
 
 action code
 {:
-    class NodoAST
+    class NodoAST implements Instruccion
     {
         String tipo;
-        
+
         public NodoAST(String tipo)
         {
             this.tipo = tipo;
+        }
+
+        @Override
+        public Object ejecutar(Entorno ent)
+        {
+            return null;
         }
     }
 
@@ -176,12 +183,12 @@ terminal Double ENTERO;
 /***** NO TERMINALES *****/
 /***** N ESTRUCTURA GENERAL *****/
 non terminal NodoAST inicio;
-non terminal NodoAST instruccion;
-non terminal ArrayList<NodoAST> lista_instrucciones;
+non terminal Instruccion instruccion;
+non terminal ArrayList<Instruccion> lista_instrucciones;
 
 /***** N DECLARACIÓN Y ASIGNACIÓN *****/
-non terminal NodoAST declaracion;
-non terminal NodoAST asignacion;
+non terminal Instruccion declaracion;
+non terminal Instruccion asignacion;
 
 /***** N ESTRUCTURAS DE CONTROL *****/
 non terminal NodoAST estructura_control;
@@ -209,7 +216,7 @@ non terminal ArrayList<Object> lista_arreglo;
 non terminal Object elemento_arreglo;
 
 /***** N EXPRESIONES Y VALORES *****/
-non terminal Object expresion;
+non terminal Expresion expresion;
 non terminal Object valor_color;
 non terminal Object valor_enum;
 
@@ -253,7 +260,7 @@ lista_instrucciones ::=
     :}
     | instruccion:i
     {:
-        ArrayList<NodoAST> lista = new ArrayList<>();
+        ArrayList<Instruccion> lista = new ArrayList<>();
         lista.add(i);
         RESULT = lista;
     :}
@@ -286,23 +293,23 @@ instruccion ::=
 declaracion ::=
     TYPE_NUMBER ID:id IGUAL_ASIG expresion:e
     {:
-        RESULT = new NodoAST("DECLARACION_NUM");
+        RESULT = new Declaracion("number", id, e);
     :}
     | TYPE_NUMBER ID:id
     {:
-        RESULT = new NodoAST("DECLARACION_NUM");
+        RESULT = new Declaracion("number", id, null);
     :}
     | TYPE_STRING ID:id IGUAL_ASIG expresion:e
     {:
-        RESULT = new NodoAST("DECLARACION_STR");
+        RESULT = new Declaracion("string", id, e);
     :}
     | TYPE_STRING ID:id
     {:
-        RESULT = new NodoAST("DECLARACION_STR");
+        RESULT = new Declaracion("string", id, null);
     :}
     | TYPE_SPECIAL ID:id IGUAL_ASIG componente:c
     {:
-        RESULT = new NodoAST("DECLARACION_SPEC");
+        RESULT = new Declaracion("special", id, null);
     :}
     | TYPE_NUMBER error
     {:
@@ -321,13 +328,13 @@ declaracion ::=
 asignacion ::=
     ID:id IGUAL_ASIG expresion:e
     {:
-        RESULT = new NodoAST("ASIGNACION");
+        RESULT = new Asignacion(id, e);
     :}
     | ID:id IGUAL_ASIG error
     {:
         RESULT = new NodoAST("ASIGNACION_ERROR");
     :}
-        ;
+    ;
 
 /***** ESTRUCTURAS DE CONTROL *****/
 estructura_control ::=
@@ -667,45 +674,97 @@ estilo ::=
 
 /***** EXPRESIONES Y VALORES *****/
 expresion ::=
-    expresion MAS expresion
-    | expresion MENOS expresion
-    | expresion POR expresion
-    | expresion DIV expresion
-    | expresion POTENCIA expresion
-    | expresion MODULO expresion
-    | expresion MAYOR expresion
-    | expresion MENOR expresion
-    | expresion MAYOR_IGUAL expresion
-    | expresion MENOR_IGUAL expresion
-    | expresion IGUALDAD expresion
-    | expresion DIFERENTE expresion
-    | expresion AND expresion
-    | expresion OR expresion
-    | NOT expresion
-    | PAR_IZQ expresion PAR_DER
-    | ENTERO
+    expresion:e1 MAS expresion:e2
     {:
-        RESULT = "NUMERO";
+        RESULT = new OperacionAritmetica(e1, "+", e2);
     :}
-    | DECIMAL
+    | expresion:e1 MENOS expresion:e2
     {:
-        RESULT = "NUMERO";
+        RESULT = new OperacionAritmetica(e1, "-", e2);
     :}
-    | CADENA
+    | expresion:e1 POR expresion:e2
     {:
-        RESULT = "CADENA";
+        RESULT = new OperacionAritmetica(e1, "*", e2);
     :}
-    | ID
+    | expresion:e1 DIV expresion:e2
     {:
-        RESULT = "VARIABLE";
+        RESULT = new OperacionAritmetica(e1, "/", e2);
+    :}
+    | expresion:e1 POTENCIA expresion:e2
+    {:
+        RESULT = new OperacionAritmetica(e1, "^", e2);
+    :}
+    | expresion:e1 MODULO expresion:e2
+    {:
+        RESULT = new OperacionAritmetica(e1, "%", e2);
+    :}
+    | expresion:e1 MAYOR expresion:e2
+    {:
+        RESULT = new OperacionRelacional(e1, ">", e2);
+    :}
+    | expresion:e1 MENOR expresion:e2
+    {:
+        RESULT = new OperacionRelacional(e1, "<", e2);
+    :}
+    | expresion:e1 MAYOR_IGUAL expresion:e2
+    {:
+        RESULT = new OperacionRelacional(e1, ">=", e2);
+    :}
+    | expresion:e1 MENOR_IGUAL expresion:e2
+    {:
+        RESULT = new OperacionRelacional(e1, "<=", e2);
+    :}
+    | expresion:e1 IGUALDAD expresion:e2
+    {:
+        RESULT = new OperacionRelacional(e1, "==", e2);
+    :}
+    | expresion:e1 DIFERENTE expresion:e2
+    {:
+        RESULT = new OperacionRelacional(e1, "!!", e2);
+    :}
+    | expresion:e1 AND expresion:e2
+    {:
+        RESULT = new OperacionLogica(e1, "&&", e2);
+    :}
+    | expresion:e1 OR expresion:e2
+    {:
+        RESULT = new OperacionLogica(e1, "||", e2);
+    :}
+    | NOT expresion:e
+    {:
+        RESULT = new OperacionLogica("!", e);
+    :}
+    | MENOS expresion:e
+    {:
+        RESULT = new OperacionAritmetica(null, "UNARIO_MENOS", e);
+    :} %prec NOT
+    | PAR_IZQ expresion:e PAR_DER
+    {:
+        RESULT = e;
+    :}
+    | ENTERO:e
+    {:
+        RESULT = new Valor(e, "number");
+    :}
+    | DECIMAL:e
+    {:
+        RESULT = new Valor(e, "number");
+    :}
+    | CADENA:c
+    {:
+        RESULT = new Valor(c, "string");
+    :}
+    | ID:id
+    {:
+        RESULT = new AccesoVariable(id);
     :}
     | COMODIN
     {:
-        RESULT = "COMODIN";
+        RESULT = new Valor("?", "comodin");
     :}
-    | FUNC_POKEMON PAR_IZQ expresion COMA expresion COMA expresion PAR_DER
+    | FUNC_POKEMON PAR_IZQ expresion:e1 COMA expresion:e2 COMA expresion:e3 PAR_DER
     {:
-        RESULT = "API_CALL";
+        RESULT = new Valor("API_CALL", "api");
     :}
     ;
 
