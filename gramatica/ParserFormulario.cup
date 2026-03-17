@@ -58,18 +58,6 @@ action code
             return null;
         }
     }
-
-    class Atributo
-    {
-        String nombre;
-        Object valor;
-        
-        public Atributo(String n, Object v)
-        {
-            nombre = n;
-            valor = v;
-        }
-    }
 :}
 
 /***** TERMINALES *****/
@@ -182,7 +170,7 @@ terminal Double ENTERO;
 
 /***** NO TERMINALES *****/
 /***** N ESTRUCTURA GENERAL *****/
-non terminal NodoAST inicio;
+non terminal Instruccion inicio;
 non terminal Instruccion instruccion;
 non terminal ArrayList<Instruccion> lista_instrucciones;
 
@@ -191,18 +179,18 @@ non terminal Instruccion declaracion;
 non terminal Instruccion asignacion;
 
 /***** N ESTRUCTURAS DE CONTROL *****/
-non terminal NodoAST estructura_control;
-non terminal NodoAST if_stmt;
-non terminal NodoAST while_stmt;
-non terminal NodoAST do_while_stmt;
-non terminal NodoAST for_stmt;
+non terminal Instruccion estructura_control;
+non terminal Instruccion if_stmt;
+non terminal Instruccion while_stmt;
+non terminal Instruccion do_while_stmt;
+non terminal Instruccion for_stmt;
 
 /***** N COMPONENTES PRINCIPALES *****/
-non terminal NodoAST componente;
-non terminal NodoAST seccion;
-non terminal NodoAST tabla;
-non terminal NodoAST texto;
-non terminal NodoAST pregunta;
+non terminal Instruccion componente;
+non terminal Instruccion seccion;
+non terminal Instruccion tabla;
+non terminal Instruccion texto;
+non terminal Instruccion pregunta;
 
 /***** N ATRIBUTOS Y ESTILOS *****/
 non terminal ArrayList<Atributo> lista_atributos;
@@ -211,7 +199,7 @@ non terminal ArrayList<Atributo> lista_estilos;
 non terminal Atributo estilo;
 
 /***** N ELEMENTOS Y ARREGLOS *****/
-non terminal ArrayList<NodoAST> lista_elementos;
+non terminal ArrayList<Instruccion> lista_elementos;
 non terminal ArrayList<Object> lista_arreglo;
 non terminal Object elemento_arreglo;
 
@@ -221,7 +209,7 @@ non terminal Object valor_color;
 non terminal Object valor_enum;
 
 /***** N FUNCIONES ESPECIALES *****/
-non terminal NodoAST funcion_especial;
+non terminal Instruccion funcion_especial;
 
 /***** PRECEDENCIA DE OPERADORES *****/
 // De menor a mayor precedencia
@@ -248,7 +236,7 @@ start with inicio;
 inicio ::=
     lista_instrucciones:li
     {:
-        RESULT = new NodoAST("RAIZ");
+        RESULT = new Bloque(li);
     :}
     ;
 
@@ -358,13 +346,13 @@ estructura_control ::=
 
 /***** IF *****/
 if_stmt ::=
-    IF PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
-    {:
-        RESULT = new NodoAST("IF");
+    IF PAR_IZQ expresion:cond PAR_DER LLAVE_IZQ lista_instrucciones:liTrue LLAVE_DER
+    {: 
+        RESULT = new SentenciaIf(cond, liTrue, null);
     :}
-    | IF PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER ELSE LLAVE_IZQ lista_instrucciones LLAVE_DER
+    | IF PAR_IZQ expresion:cond PAR_DER LLAVE_IZQ lista_instrucciones:liTrue LLAVE_DER ELSE LLAVE_IZQ lista_instrucciones:liFalse LLAVE_DER
     {:
-        RESULT = new NodoAST("IF_ELSE");
+        RESULT = new SentenciaIf(cond, liTrue, liFalse);
     :}
     | IF PAR_IZQ error PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
     {:
@@ -378,9 +366,9 @@ if_stmt ::=
 
 /***** WHILE *****/
 while_stmt ::=
-    WHILE PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
+    WHILE PAR_IZQ expresion:cond PAR_DER LLAVE_IZQ lista_instrucciones:li LLAVE_DER
     {:
-        RESULT = new NodoAST("WHILE");
+        RESULT = new SentenciaWhile(cond, li, false);
     :}
     | WHILE PAR_IZQ error PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
     {:
@@ -394,9 +382,9 @@ while_stmt ::=
 
 /***** DO-WHILE *****/
 do_while_stmt ::=
-    DO LLAVE_IZQ lista_instrucciones LLAVE_DER WHILE PAR_IZQ expresion PAR_DER
+    DO LLAVE_IZQ lista_instrucciones:li LLAVE_DER WHILE PAR_IZQ expresion:cond PAR_DER
     {:
-        RESULT = new NodoAST("DO_WHILE");
+        RESULT = new SentenciaWhile(cond, li, true);
     :}
     | DO LLAVE_IZQ error LLAVE_DER WHILE PAR_IZQ expresion PAR_DER
     {:
@@ -410,13 +398,13 @@ do_while_stmt ::=
 
 /***** FOR *****/
 for_stmt ::=
-    FOR PAR_IZQ asignacion PUNTO_Y_COMA expresion PUNTO_Y_COMA asignacion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
+    FOR PAR_IZQ asignacion:asig PUNTO_Y_COMA expresion:cond PUNTO_Y_COMA asignacion:upd PAR_DER LLAVE_IZQ lista_instrucciones:li LLAVE_DER
     {:
-        RESULT = new NodoAST("FOR_CLASSIC");
+        RESULT = new SentenciaForClasico(asig, cond, upd, li);
     :}
-    | FOR PAR_IZQ ID IN expresion PUNTO_PUNTO expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
+    | FOR PAR_IZQ ID:id IN expresion:inicio PUNTO_PUNTO expresion:fin PAR_DER LLAVE_IZQ lista_instrucciones:li LLAVE_DER
     {:
-        RESULT = new NodoAST("FOR_RANGE");
+        RESULT = new SentenciaFor(id, inicio, fin, li);
     :}
     | FOR PAR_IZQ error PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER
     {:
@@ -452,7 +440,7 @@ componente ::=
 seccion ::=
     SECTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
-        RESULT = new NodoAST("SECTION");
+        RESULT = new ComponenteSeccion(la);
     :}
     | SECTION CORCHETE_IZQ error CORCHETE_DER
     {:
@@ -464,7 +452,7 @@ seccion ::=
 tabla ::=
     TABLE CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
-        RESULT = new NodoAST("TABLE");
+        RESULT = new ComponenteTabla(la);
     :}
     | TABLE CORCHETE_IZQ error CORCHETE_DER
     {:
@@ -476,7 +464,7 @@ tabla ::=
 texto ::=
     TEXT CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
-        RESULT = new NodoAST("TEXT");
+        RESULT = new ComponenteTexto(la);
     :}
     | TEXT CORCHETE_IZQ error CORCHETE_DER
     {:
@@ -488,19 +476,19 @@ texto ::=
 pregunta ::=
     OPEN_QUESTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
-        RESULT = new NodoAST("OPEN_QUESTION");
+        RESULT = new ComponentePregunta("OPEN", la);
     :}
     | DROP_QUESTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
-        RESULT = new NodoAST("DROP_QUESTION");
+        RESULT = new ComponentePregunta("DROP", la);
     :}
     | SELECT_QUESTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
-        RESULT = new NodoAST("SELECT_QUESTION");
+        RESULT = new ComponentePregunta("SELECT", la);
     :}
     | MULTIPLE_QUESTION CORCHETE_IZQ lista_atributos:la CORCHETE_DER
     {:
-        RESULT = new NodoAST("MULTIPLE_QUESTION");
+        RESULT = new ComponentePregunta("MULTIPLE", la);
     :}
     | OPEN_QUESTION CORCHETE_IZQ error CORCHETE_DER
     {:
@@ -603,7 +591,7 @@ lista_elementos ::=
     :}
     | componente:c
     {:
-        ArrayList<NodoAST> le = new ArrayList<>();
+        ArrayList<Instruccion> le = new ArrayList<>();
         le.add(c);
         RESULT = le;
     :}
