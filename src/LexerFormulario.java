@@ -1119,7 +1119,7 @@ public class LexerFormulario implements java_cup.runtime.Scanner {
           // fall through
           case 94: break;
           case 13:
-            { return symbol(sym.ENTERO, yytext());
+            { return symbol(sym.ENTERO, Double.parseDouble(yytext()));
             }
           // fall through
           case 95: break;
@@ -1239,7 +1239,7 @@ public class LexerFormulario implements java_cup.runtime.Scanner {
           // fall through
           case 118: break;
           case 37:
-            { return symbol(sym.DECIMAL, yytext());
+            { return symbol(sym.DECIMAL, Double.parseDouble(yytext()));
             }
           // fall through
           case 119: break;

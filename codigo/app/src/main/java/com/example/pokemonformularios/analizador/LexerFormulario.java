@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 
 @SuppressWarnings("fallthrough")
-public class LexerFormulario implements java_cup.runtime.Scanner {
+public class LexerFormulario implements Scanner {
 
   /** This character denotes the end of file. */
   public static final int YYEOF = -1;
@@ -915,7 +915,7 @@ public class LexerFormulario implements java_cup.runtime.Scanner {
    * @return the next token.
    * @exception java.io.IOException if any I/O-Error occurs.
    */
-  @Override  public java_cup.runtime.Symbol next_token() throws java.io.IOException
+  @Override  public Symbol next_token() throws java.io.IOException
   {
     int zzInput;
     int zzAction;
@@ -1053,7 +1053,7 @@ public class LexerFormulario implements java_cup.runtime.Scanner {
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
             zzDoEOF();
-          { return new java_cup.runtime.Symbol(sym.EOF); }
+          { return new Symbol(sym.EOF); }
       }
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
@@ -1119,7 +1119,7 @@ public class LexerFormulario implements java_cup.runtime.Scanner {
           // fall through
           case 94: break;
           case 13:
-            { return symbol(sym.ENTERO, yytext());
+            { return symbol(sym.ENTERO, Double.parseDouble(yytext()));
             }
           // fall through
           case 95: break;
@@ -1239,7 +1239,7 @@ public class LexerFormulario implements java_cup.runtime.Scanner {
           // fall through
           case 118: break;
           case 37:
-            { return symbol(sym.DECIMAL, yytext());
+            { return symbol(sym.DECIMAL, Double.parseDouble(yytext()));
             }
           // fall through
           case 119: break;

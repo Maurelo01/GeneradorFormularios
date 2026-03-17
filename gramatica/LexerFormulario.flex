@@ -466,12 +466,12 @@ ColorHSL = <{EspaciosEnBlanco}*{Entero}{EspaciosEnBlanco}*,{EspaciosEnBlanco}*{E
 
 {Decimal}
 {
-    return symbol(sym.DECIMAL, yytext());
+    return symbol(sym.DECIMAL, Double.parseDouble(yytext()));
 }
 
 {Entero}
 {
-    return symbol(sym.ENTERO, yytext());
+    return symbol(sym.ENTERO, Double.parseDouble(yytext()));
 }
 
 {Identificador}

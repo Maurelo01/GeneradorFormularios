@@ -928,18 +928,6 @@ class CUP$ParserFormulario$actions {
         }
     }
 
-    class Atributo
-    {
-        String nombre;
-        Object valor;
-        
-        public Atributo(String n, Object v)
-        {
-            nombre = n;
-            valor = v;
-        }
-    }
-
   private final ParserFormulario parser;
 
   /** Constructor */
@@ -967,7 +955,7 @@ class CUP$ParserFormulario$actions {
               Object RESULT =null;
 		int start_valleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
 		int start_valright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
-		NodoAST start_val = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
+		Instruccion start_val = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		RESULT = start_val;
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("$START",0, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -978,12 +966,12 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 1: // inicio ::= lista_instrucciones 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int lileft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int liright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
 		ArrayList<Instruccion> li = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new NodoAST("RAIZ");
+        RESULT = new Bloque(li);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("inicio",0, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1057,7 +1045,7 @@ class CUP$ParserFormulario$actions {
               Instruccion RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST c = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion c = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = c;
     
@@ -1071,7 +1059,7 @@ class CUP$ParserFormulario$actions {
               Instruccion RESULT =null;
 		int eleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int eright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST e = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion e = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = e;
     
@@ -1085,7 +1073,7 @@ class CUP$ParserFormulario$actions {
               Instruccion RESULT =null;
 		int fleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int fright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST f = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion f = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = f;
     
@@ -1164,7 +1152,7 @@ class CUP$ParserFormulario$actions {
 		String id = (String)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-2)).value;
 		int cleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST c = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion c = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = new Declaracion("special", id, null);
     
@@ -1239,10 +1227,10 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 19: // estructura_control ::= if_stmt 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int ileft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST i = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion i = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = i;
     
@@ -1253,10 +1241,10 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 20: // estructura_control ::= while_stmt 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int wleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int wright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST w = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion w = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = w;
     
@@ -1267,10 +1255,10 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 21: // estructura_control ::= do_while_stmt 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int dleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int dright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST d = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion d = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = d;
     
@@ -1281,10 +1269,10 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 22: // estructura_control ::= for_stmt 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int fleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int fright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST f = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion f = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = f;
     
@@ -1295,9 +1283,15 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 23: // if_stmt ::= IF PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER 
             {
-              NodoAST RESULT =null;
-		
-        RESULT = new NodoAST("IF");
+              Instruccion RESULT =null;
+		int condleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).left;
+		int condright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).right;
+		Expresion cond = (Expresion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).value;
+		int liTrueleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
+		int liTrueright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
+		ArrayList<Instruccion> liTrue = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
+		 
+        RESULT = new SentenciaIf(cond, liTrue, null);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("if_stmt",6, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-6)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1306,9 +1300,18 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 24: // if_stmt ::= IF PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER ELSE LLAVE_IZQ lista_instrucciones LLAVE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
+		int condleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-8)).left;
+		int condright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-8)).right;
+		Expresion cond = (Expresion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-8)).value;
+		int liTrueleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-5)).left;
+		int liTrueright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-5)).right;
+		ArrayList<Instruccion> liTrue = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-5)).value;
+		int liFalseleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
+		int liFalseright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
+		ArrayList<Instruccion> liFalse = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("IF_ELSE");
+        RESULT = new SentenciaIf(cond, liTrue, liFalse);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("if_stmt",6, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-10)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1317,7 +1320,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 25: // if_stmt ::= IF PAR_IZQ error PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("IF_ERROR_CONDICION");
     
@@ -1328,7 +1331,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 26: // if_stmt ::= IF PAR_IZQ expresion PAR_DER LLAVE_IZQ error LLAVE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("IF_ERROR_CUERPO");
     
@@ -1339,9 +1342,15 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 27: // while_stmt ::= WHILE PAR_IZQ expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
+		int condleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).left;
+		int condright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).right;
+		Expresion cond = (Expresion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).value;
+		int lileft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
+		int liright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
+		ArrayList<Instruccion> li = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("WHILE");
+        RESULT = new SentenciaWhile(cond, li, false);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("while_stmt",7, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-6)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1350,7 +1359,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 28: // while_stmt ::= WHILE PAR_IZQ error PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("WHILE_ERROR_CONDICION");
     
@@ -1361,7 +1370,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 29: // while_stmt ::= WHILE PAR_IZQ expresion PAR_DER LLAVE_IZQ error LLAVE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("WHILE_ERROR_CUERPO");
     
@@ -1372,9 +1381,15 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 30: // do_while_stmt ::= DO LLAVE_IZQ lista_instrucciones LLAVE_DER WHILE PAR_IZQ expresion PAR_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
+		int lileft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-5)).left;
+		int liright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-5)).right;
+		ArrayList<Instruccion> li = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-5)).value;
+		int condleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
+		int condright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
+		Expresion cond = (Expresion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("DO_WHILE");
+        RESULT = new SentenciaWhile(cond, li, true);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("do_while_stmt",8, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-7)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1383,7 +1398,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 31: // do_while_stmt ::= DO LLAVE_IZQ error LLAVE_DER WHILE PAR_IZQ expresion PAR_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("DO_WHILE_ERROR_CUERPO");
     
@@ -1394,7 +1409,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 32: // do_while_stmt ::= DO LLAVE_IZQ lista_instrucciones LLAVE_DER WHILE PAR_IZQ error PAR_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("DO_WHILE_ERROR_CONDICION");
     
@@ -1405,9 +1420,21 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 33: // for_stmt ::= FOR PAR_IZQ asignacion PUNTO_Y_COMA expresion PUNTO_Y_COMA asignacion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
+		int asigleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-8)).left;
+		int asigright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-8)).right;
+		Instruccion asig = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-8)).value;
+		int condleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-6)).left;
+		int condright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-6)).right;
+		Expresion cond = (Expresion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-6)).value;
+		int updleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).left;
+		int updright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).right;
+		Instruccion upd = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).value;
+		int lileft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
+		int liright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
+		ArrayList<Instruccion> li = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("FOR_CLASSIC");
+        RESULT = new SentenciaForClasico(asig, cond, upd, li);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("for_stmt",9, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-10)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1416,9 +1443,21 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 34: // for_stmt ::= FOR PAR_IZQ ID IN expresion PUNTO_PUNTO expresion PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
+		int idleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-8)).left;
+		int idright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-8)).right;
+		String id = (String)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-8)).value;
+		int inicioleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-6)).left;
+		int inicioright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-6)).right;
+		Expresion inicio = (Expresion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-6)).value;
+		int finleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).left;
+		int finright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).right;
+		Expresion fin = (Expresion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).value;
+		int lileft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
+		int liright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
+		ArrayList<Instruccion> li = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("FOR_RANGE");
+        RESULT = new SentenciaFor(id, inicio, fin, li);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("for_stmt",9, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-10)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1427,7 +1466,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 35: // for_stmt ::= FOR PAR_IZQ error PAR_DER LLAVE_IZQ lista_instrucciones LLAVE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("FOR_ERROR_CONDICION");
     
@@ -1438,7 +1477,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 36: // for_stmt ::= FOR PAR_IZQ asignacion PUNTO_Y_COMA expresion PUNTO_Y_COMA asignacion PAR_DER LLAVE_IZQ error LLAVE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("FOR_ERROR_CUERPO");
     
@@ -1449,10 +1488,10 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 37: // componente ::= seccion 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int sleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int sright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST s = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion s = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = s;
     
@@ -1463,10 +1502,10 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 38: // componente ::= tabla 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int tleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int tright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST t = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion t = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = t;
     
@@ -1477,10 +1516,10 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 39: // componente ::= texto 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int txleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int txright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST tx = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion tx = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = tx;
     
@@ -1491,10 +1530,10 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 40: // componente ::= pregunta 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int pleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int pright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST p = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion p = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         RESULT = p;
     
@@ -1505,12 +1544,12 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 41: // seccion ::= SECTION CORCHETE_IZQ lista_atributos CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int laleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
 		int laright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
 		ArrayList<Atributo> la = (ArrayList<Atributo>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("SECTION");
+        RESULT = new ComponenteSeccion(la);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("seccion",11, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1519,7 +1558,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 42: // seccion ::= SECTION CORCHETE_IZQ error CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("SECTION_ERROR_ATRIBUTOS");
     
@@ -1530,12 +1569,12 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 43: // tabla ::= TABLE CORCHETE_IZQ lista_atributos CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int laleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
 		int laright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
 		ArrayList<Atributo> la = (ArrayList<Atributo>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("TABLE");
+        RESULT = new ComponenteTabla(la);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("tabla",12, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1544,7 +1583,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 44: // tabla ::= TABLE CORCHETE_IZQ error CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("TABLE_ERROR_ATRIBUTOS");
     
@@ -1555,12 +1594,12 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 45: // texto ::= TEXT CORCHETE_IZQ lista_atributos CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int laleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
 		int laright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
 		ArrayList<Atributo> la = (ArrayList<Atributo>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("TEXT");
+        RESULT = new ComponenteTexto(la);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("texto",13, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1569,7 +1608,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 46: // texto ::= TEXT CORCHETE_IZQ error CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("TEXT_ERROR_ATRIBUTOS");
     
@@ -1580,12 +1619,12 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 47: // pregunta ::= OPEN_QUESTION CORCHETE_IZQ lista_atributos CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int laleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
 		int laright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
 		ArrayList<Atributo> la = (ArrayList<Atributo>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("OPEN_QUESTION");
+        RESULT = new ComponentePregunta("OPEN", la);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("pregunta",14, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1594,12 +1633,12 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 48: // pregunta ::= DROP_QUESTION CORCHETE_IZQ lista_atributos CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int laleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
 		int laright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
 		ArrayList<Atributo> la = (ArrayList<Atributo>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("DROP_QUESTION");
+        RESULT = new ComponentePregunta("DROP", la);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("pregunta",14, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1608,12 +1647,12 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 49: // pregunta ::= SELECT_QUESTION CORCHETE_IZQ lista_atributos CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int laleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
 		int laright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
 		ArrayList<Atributo> la = (ArrayList<Atributo>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("SELECT_QUESTION");
+        RESULT = new ComponentePregunta("SELECT", la);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("pregunta",14, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1622,12 +1661,12 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 50: // pregunta ::= MULTIPLE_QUESTION CORCHETE_IZQ lista_atributos CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int laleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
 		int laright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
 		ArrayList<Atributo> la = (ArrayList<Atributo>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new NodoAST("MULTIPLE_QUESTION");
+        RESULT = new ComponentePregunta("MULTIPLE", la);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("pregunta",14, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1636,7 +1675,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 51: // pregunta ::= OPEN_QUESTION CORCHETE_IZQ error CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("OPEN_QUESTION_ERROR");
     
@@ -1647,7 +1686,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 52: // pregunta ::= DROP_QUESTION CORCHETE_IZQ error CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("DROP_QUESTION_ERROR");
     
@@ -1658,7 +1697,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 53: // pregunta ::= SELECT_QUESTION CORCHETE_IZQ error CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("SELECT_QUESTION_ERROR");
     
@@ -1669,7 +1708,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 54: // pregunta ::= MULTIPLE_QUESTION CORCHETE_IZQ error CORCHETE_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		
         RESULT = new NodoAST("MULTIPLE_QUESTION_ERROR");
     
@@ -1871,7 +1910,7 @@ class CUP$ParserFormulario$actions {
               Atributo RESULT =null;
 		int leleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
 		int leright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
-		ArrayList<NodoAST> le = (ArrayList<NodoAST>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
+		ArrayList<Instruccion> le = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
         RESULT = new Atributo("elements", le);
     
@@ -1910,13 +1949,13 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 71: // lista_elementos ::= lista_elementos COMA componente 
             {
-              ArrayList<NodoAST> RESULT =null;
+              ArrayList<Instruccion> RESULT =null;
 		int leleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-2)).left;
 		int leright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-2)).right;
-		ArrayList<NodoAST> le = (ArrayList<NodoAST>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-2)).value;
+		ArrayList<Instruccion> le = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-2)).value;
 		int cleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST c = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion c = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
         le.add(c);
         RESULT = le;
@@ -1928,12 +1967,12 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 72: // lista_elementos ::= componente 
             {
-              ArrayList<NodoAST> RESULT =null;
+              ArrayList<Instruccion> RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
-		NodoAST c = (NodoAST)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
+		Instruccion c = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        ArrayList<NodoAST> le = new ArrayList<>();
+        ArrayList<Instruccion> le = new ArrayList<>();
         le.add(c);
         RESULT = le;
     
@@ -2006,7 +2045,7 @@ class CUP$ParserFormulario$actions {
               Object RESULT =null;
 		int leleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
 		int leright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
-		ArrayList<NodoAST> le = (ArrayList<NodoAST>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
+		ArrayList<Instruccion> le = (ArrayList<Instruccion>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
         RESULT = le;
     
@@ -2663,7 +2702,7 @@ class CUP$ParserFormulario$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 126: // funcion_especial ::= ID FUNC_DRAW PAR_IZQ lista_arreglo PAR_DER 
             {
-              NodoAST RESULT =null;
+              Instruccion RESULT =null;
 		int idleft = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).left;
 		int idright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).right;
 		String id = (String)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-4)).value;
