@@ -1,5 +1,6 @@
 import java_cup.runtime.*;
 import java.util.ArrayList;
+import com.example.pokemonformularios.reportes.ErrorCompi;
 
 %%
 %class LexerFormulario
@@ -35,6 +36,8 @@ import java.util.ArrayList;
         listaErrores.add(new ErrorLexico(lexema, yyline + 1, yycolumn + 1, descripcion));
         System.err.println("Error Léxico en línea " + (yyline + 1) + ", columna " + (yycolumn + 1) + ": " + descripcion + " '" + lexema + "'");
     }
+
+    public java.util.ArrayList<ErrorCompi> erroresLexicos = new java.util.ArrayList<>();
 %}
 
 /***** EXPRESIONES REGULARES *****/
@@ -482,10 +485,17 @@ ColorHSL = <{EspaciosEnBlanco}*{Entero}{EspaciosEnBlanco}*,{EspaciosEnBlanco}*{E
 /***** MANEJO DE ERRORES *****/
 {CadenaSinCerrar}
 {
-    reportarError(yytext(), "Cadena sin cerrar - falta comilla de cierre");
+    String lexema = yytext();
+    int linea = yyline + 1;
+    int columna = yycolumn + 1;
+    erroresLexicos.add(new ErrorCompi("Léxico", "Cadena sin cerrar: " + lexema, linea, columna));
+    System.err.println("Error Léxico en (" + linea + ", " + columna + "): Cadena sin cerrar");
 }
 .
 {
-    reportarError(yytext(), "Caracter no válido en el lenguaje");
-    return symbol(sym.error, yytext());
+    String lexema = yytext();
+    int linea = yyline + 1;
+    int columna = yycolumn + 1;
+    erroresLexicos.add(new ErrorCompi("Léxico", "Caracter no válido: " + lexema, linea, columna));
+    System.err.println("Error Léxico en (" + linea + ", " + columna + "): Caracter no válido: " + lexema);
 }

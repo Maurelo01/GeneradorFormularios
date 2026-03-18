@@ -4,6 +4,7 @@ package com.example.pokemonformularios.analizador;// DO NOT EDIT
 
 import java_cup.runtime.*;
 import java.util.ArrayList;
+import com.example.pokemonformularios.reportes.ErrorCompi;
 
 
 @SuppressWarnings("fallthrough")
@@ -633,6 +634,8 @@ public class LexerFormulario implements Scanner {
         System.err.println("Error Léxico en línea " + (yyline + 1) + ", columna " + (yycolumn + 1) + ": " + descripcion + " '" + lexema + "'");
     }
 
+    public ArrayList<ErrorCompi> erroresLexicos = new ArrayList<>();
+
 
   /**
    * Creates a new scanner
@@ -1058,8 +1061,11 @@ public class LexerFormulario implements Scanner {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1:
-            { reportarError(yytext(), "Caracter no válido en el lenguaje");
-    return symbol(sym.error, yytext());
+            { String lexema = yytext();
+    int linea = yyline + 1;
+    int columna = yycolumn + 1;
+    erroresLexicos.add(new ErrorCompi("Léxico", "Caracter no válido: " + lexema, linea, columna));
+    System.err.println("Error Léxico en (" + linea + ", " + columna + "): Caracter no válido: " + lexema);
             }
           // fall through
           case 83: break;
@@ -1074,7 +1080,11 @@ public class LexerFormulario implements Scanner {
           // fall through
           case 85: break;
           case 4:
-            { reportarError(yytext(), "Cadena sin cerrar - falta comilla de cierre");
+            { String lexema = yytext();
+    int linea = yyline + 1;
+    int columna = yycolumn + 1;
+    erroresLexicos.add(new ErrorCompi("Léxico", "Cadena sin cerrar: " + lexema, linea, columna));
+    System.err.println("Error Léxico en (" + linea + ", " + columna + "): Cadena sin cerrar");
             }
           // fall through
           case 86: break;
