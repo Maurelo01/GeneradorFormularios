@@ -6,6 +6,7 @@ package com.example.pokemonformularios.analizador;
 import java_cup.runtime.*;
 import java.util.ArrayList;
 import com.example.pokemonformularios.ast.*;
+import com.example.pokemonformularios.reportes.ErrorCompi;
 import java_cup.runtime.XMLElement;
 
 /** CUP v0.11b 20160615 (GIT 4ac7450) generated parser.
@@ -870,22 +871,7 @@ public class ParserFormulario extends lr_parser {
 
 
 
-    public static class ErrorSintactico
-    {
-        public String lexema;
-        public int linea;
-        public int columna;
-        public String descripcion;
-        
-        public ErrorSintactico(String lexema, int linea, int columna, String descripcion)
-        {
-            this.lexema = lexema;
-            this.linea = linea;
-            this.columna = columna;
-            this.descripcion = descripcion;
-        }
-    }
-    public ArrayList<ErrorSintactico> listaErrores = new ArrayList<>();
+    public ArrayList<ErrorCompi> erroresSintacticos = new ArrayList<>();
 
     @Override
     public void syntax_error(Symbol cur_token)
@@ -893,9 +879,8 @@ public class ParserFormulario extends lr_parser {
         String lexema = cur_token.value != null ? cur_token.value.toString() : "EOF";
         int linea = cur_token.left;
         int columna = cur_token.right;
-        String descripcion = "Error sintáctico: token inesperado '" + lexema + "'";
-        
-        listaErrores.add(new ErrorSintactico(lexema, linea, columna, descripcion));
+        String descripcion = "Se esperaba otro componente. No se reconoce: '" + lexema + "'";
+        erroresSintacticos.add(new ErrorCompi("Sintáctico", descripcion, linea, columna));
         System.err.println("Error Sintáctico en línea " + linea + ", columna " + columna + ": " + descripcion);
     }
 
@@ -903,7 +888,9 @@ public class ParserFormulario extends lr_parser {
     public void unrecovered_syntax_error(Symbol cur_token) throws Exception
     {
         String lexema = cur_token.value != null ? cur_token.value.toString() : "EOF";
-        listaErrores.add(new ErrorSintactico(lexema, cur_token.left, cur_token.right, "Error sintáctico irrecuperable. Estructura mal formada."));
+        String descripcion = "Estructura mal formada cerca de '" + lexema + "'";
+        erroresSintacticos.add(new ErrorCompi("Sintáctico Irrecuperable", descripcion, cur_token.left, cur_token.right));
+        System.err.println("Error Irrecuperable: " + descripcion);
     }
 
 
