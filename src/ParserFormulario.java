@@ -2509,7 +2509,7 @@ class CUP$ParserFormulario$actions {
 		int e3right = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
 		Expresion e3 = (Expresion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        RESULT = new Valor("API_CALL", "api");
+        RESULT = new FuncionPkmAPI(e1, e2, e3);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("expresion",22, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-7)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }

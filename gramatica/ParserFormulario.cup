@@ -739,7 +739,7 @@ expresion ::=
     :}
     | FUNC_POKEMON PAR_IZQ expresion:e1 COMA expresion:e2 COMA expresion:e3 PAR_DER
     {:
-        RESULT = new Valor("API_CALL", "api");
+        RESULT = new FuncionPkmAPI(e1, e2, e3);
     :}
     ;
 
