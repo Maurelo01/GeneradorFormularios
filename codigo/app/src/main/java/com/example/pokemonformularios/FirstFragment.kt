@@ -146,6 +146,35 @@ class FirstFragment : Fragment()
                 val raizAST = sym.value as? Instruccion
                 val entornoGlobal = Entorno(null, requireContext(), contenedorFormulario)
                 raizAST?.ejecutar(entornoGlobal)
+                val btnEnviar = Button(requireContext())
+                btnEnviar.text = "Enviar Formulario"
+                btnEnviar.setBackgroundColor(android.graphics.Color.parseColor("#29446F"))
+                btnEnviar.setTextColor(android.graphics.Color.WHITE)
+                val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                params.setMargins(0, 32, 0, 32)
+                btnEnviar.layoutParams = params
+                btnEnviar.setOnClickListener{
+                    val preguntas = entornoGlobal.preguntasFormulario
+                    var totalPuntos = 0
+                    var totalCalificables = 0
+                    for (pregunta in preguntas)
+                    {
+                        if (pregunta.esCalificable())
+                        {
+                            totalCalificables++
+                            totalPuntos += pregunta.evaluarPuntos()
+                        }
+                    }
+                    if (totalCalificables > 0)
+                    {
+                        AlertDialog.Builder(requireContext()).setTitle("Formulario Enviado").setMessage("Tu puntuación es:\n$totalPuntos de $totalCalificables correctas.").setPositiveButton("Aceptar", null).show()
+                    }
+                    else
+                    {
+                        Toast.makeText(requireContext(), "Formulario enviado exitosamente.", Toast.LENGTH_LONG).show()
+                    }
+                }
+                contenedorFormulario.addView(btnEnviar)
                 if (entornoGlobal.erroresSemanticos.isNotEmpty())
                 {
                     todosLosErrores.addAll(entornoGlobal.erroresSemanticos)

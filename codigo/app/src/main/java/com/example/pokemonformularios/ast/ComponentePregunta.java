@@ -2,6 +2,7 @@ package com.example.pokemonformularios.ast;
 import java.util.List;
 import java.util.ArrayList;
 import android.graphics.Color;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -22,7 +23,9 @@ public class ComponentePregunta implements Instruccion
 {
     private String tipoPregunta;
     private List<Atributo> atributos;
-
+    private Object respuestaCorrecta = null;
+    private View vistaEntrada = null;
+    private List<CheckBox> listaCheckboxes = new ArrayList<>();
     public ComponentePregunta(String tipoPregunta, List<Atributo> atributos)
     {
         this.tipoPregunta = tipoPregunta;
@@ -48,6 +51,27 @@ public class ComponentePregunta implements Instruccion
                 {
                     opciones = (List<Object>) attr.getValor();
                 }
+                else if (attr.getNombre().equals("correct"))
+                {
+                    respuestaCorrecta = ((Expresion) attr.getValor()).evaluar(ent);
+                }
+                else if (attr.getNombre().equals("correct_multiple"))
+                {
+                    List<Object> expresiones = (List<Object>) attr.getValor();
+                    List<Integer> correctasEvaluadas = new ArrayList<>();
+                    for (Object exp : expresiones)
+                    {
+                        if (exp instanceof Expresion)
+                        {
+                            Object val = ((Expresion) exp).evaluar(ent);
+                            if (val instanceof Double)
+                            {
+                                correctasEvaluadas.add(Double.valueOf(val.toString()).intValue());
+                            }
+                        }
+                    }
+                    respuestaCorrecta = correctasEvaluadas;
+                }
             }
         }
         if (ent.getContexto() != null && ent.getLayoutActual() != null)
@@ -69,6 +93,7 @@ public class ComponentePregunta implements Instruccion
                     EditText editText = new EditText(ent.getContexto());
                     editText.setHint("Tu respuesta...");
                     layoutPregunta.addView(editText);
+                    this.vistaEntrada = editText;
                     break;
                 case "SELECT":
                     RadioGroup radioGroup = new RadioGroup(ent.getContexto());
@@ -84,6 +109,7 @@ public class ComponentePregunta implements Instruccion
                         }
                     }
                     layoutPregunta.addView(radioGroup);
+                    this.vistaEntrada = radioGroup;
                     break;
                 case "MULTIPLE":
                     for (Object obj : opciones)
@@ -95,16 +121,19 @@ public class ComponentePregunta implements Instruccion
                             CheckBox cb = new CheckBox(ent.getContexto());
                             cb.setText(textoOpcion);
                             layoutPregunta.addView(cb);
+                            this.listaCheckboxes.add(cb);
                         }
                     }
                     break;
                 case "DROP":
                     Spinner spinner = new Spinner(ent.getContexto());
                     List<String> opcionesString = new ArrayList<>();
+                    opcionesString.add(" Selecciona ");
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(ent.getContexto(), android.R.layout.simple_spinner_item, opcionesString);
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinner.setAdapter(adapter);
                     layoutPregunta.addView(spinner);
+                    this.vistaEntrada = spinner;
                     boolean requiereApi = false;
                     int pokeInicio = 1;
                     int pokeFin = 1;
@@ -135,8 +164,69 @@ public class ComponentePregunta implements Instruccion
                     break;
             }
             ent.getLayoutActual().addView(layoutPregunta);
+            ent.registrarPregunta(this);
         }
         return null;
+    }
+
+    public int evaluarPuntos()
+    {
+        if (respuestaCorrecta == null) return 0;
+        try
+        {
+            if (tipoPregunta.equals("SELECT") && vistaEntrada instanceof RadioGroup)
+            {
+                RadioGroup rg = (RadioGroup) vistaEntrada;
+                int radioButtonID = rg.getCheckedRadioButtonId();
+                if (radioButtonID != -1)
+                {
+                    View radioButton = rg.findViewById(radioButtonID);
+                    int indiceSeleccionado = rg.indexOfChild(radioButton) + 1;
+                    int indiceCorrecto = Double.valueOf(respuestaCorrecta.toString()).intValue();
+                    if (indiceSeleccionado == indiceCorrecto) return 1;
+                }
+            }
+            else if (tipoPregunta.equals("DROP") && vistaEntrada instanceof Spinner)
+            {
+                Spinner sp = (Spinner) vistaEntrada;
+                int indiceSeleccionado = sp.getSelectedItemPosition();
+                int indiceCorrecto = Double.valueOf(respuestaCorrecta.toString()).intValue();
+                if (indiceSeleccionado == indiceCorrecto) return 1;
+            }
+            else if (tipoPregunta.equals("MULTIPLE"))
+            {
+                @SuppressWarnings("unchecked")
+                List<Integer> correctas = (List<Integer>) respuestaCorrecta;
+                int opcionesMarcadas = 0;
+                int aciertos = 0;
+                for (int i = 0; i < listaCheckboxes.size(); i++)
+                {
+                    if (listaCheckboxes.get(i).isChecked())
+                    {
+                        opcionesMarcadas++;
+                        if (correctas.contains(i + 1))
+                        {
+                            aciertos++;
+                        }
+                    }
+                }
+                if (aciertos == correctas.size() && opcionesMarcadas == correctas.size())
+                {
+                    return 1;
+                }
+                return 0;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public boolean esCalificable()
+    {
+        return respuestaCorrecta != null && !tipoPregunta.equals("OPEN");
     }
 
     private void cargarPokemon(int inicio, int fin, List<String> opcionesString, ArrayAdapter<String> adapter)
@@ -172,7 +262,7 @@ public class ComponentePregunta implements Instruccion
             }
             new Handler(Looper.getMainLooper()).post(() ->
             {
-                opcionesString.clear();
+                opcionesString.remove(opcionesString.size() - 1);
                 opcionesString.addAll(pokemonesDescargados);
                 adapter.notifyDataSetChanged();
             });

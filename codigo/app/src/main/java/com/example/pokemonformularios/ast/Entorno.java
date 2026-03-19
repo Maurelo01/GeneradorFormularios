@@ -14,6 +14,7 @@ public class Entorno
     private Context contexto;
     private LinearLayout layoutActual;
     private List<ErrorCompi> erroresSemanticos;
+    private List<ComponentePregunta> preguntasFormulario;
 
     public Entorno(Entorno anterior, Context contexto, LinearLayout layoutActual)
     {
@@ -22,6 +23,7 @@ public class Entorno
         this.contexto = contexto;
         this.layoutActual = layoutActual;
         this.erroresSemanticos = new ArrayList<>();
+        this.preguntasFormulario = new ArrayList<>();
     }
 
     public Entorno(Entorno anterior)
@@ -33,6 +35,7 @@ public class Entorno
             this.contexto = anterior.getContexto();
             this.layoutActual = anterior.getLayoutActual();
             this.erroresSemanticos = anterior.getErroresSemanticos();
+            this.preguntasFormulario = anterior.getPreguntasFormulario();
         }
     }
 
@@ -70,6 +73,14 @@ public class Entorno
         return false;
     }
 
+    public void registrarPregunta(ComponentePregunta pregunta)
+    {
+        if (preguntasFormulario != null)
+        {
+            preguntasFormulario.add(pregunta);
+        }
+    }
+
     public void reportarErrorSemantico(String descripcion)
     {
         if (erroresSemanticos != null)
@@ -89,6 +100,10 @@ public class Entorno
     public List<ErrorCompi> getErroresSemanticos()
     {
         return erroresSemanticos;
+    }
+    public List<ComponentePregunta> getPreguntasFormulario()
+    {
+        return preguntasFormulario;
     }
     public void setLayoutActual(LinearLayout layoutActual)
     {
