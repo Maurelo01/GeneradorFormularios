@@ -29,12 +29,98 @@ class FirstFragment : Fragment()
         val btnErrores = view.findViewById<Button>(R.id.btnErrores)
         val entradaCodigo = view.findViewById<EditText>(R.id.entradaCodigo)
         val contenedorFormulario = view.findViewById<LinearLayout>(R.id.contenedorFormulario)
+        val btnPlantilla = view.findViewById<Button>(R.id.btnPlantilla)
+        val btnColor = view.findViewById<Button>(R.id.btnColor)
         btnErrores.isEnabled = false
+
+        entradaCodigo.addTextChangedListener(object : android.text.TextWatcher
+        {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?)
+            {
+                entradaCodigo.removeTextChangedListener(this)
+                colorearSintaxis(s)
+                entradaCodigo.addTextChangedListener(this)
+            }
+        })
+
+        btnPlantilla.setOnClickListener{
+            val codigoPlantilla = """
+                number titulo = 1
+                WHILE (titulo <= 3) {
+                    SECTION [
+                        elements: {
+                            TEXT [ content: "Texto generado numero: " + titulo ]
+                        }
+                    ]
+                    titulo = titulo + 1
+                }
+            """.trimIndent()
+            entradaCodigo.setText(codigoPlantilla)
+            Toast.makeText(requireContext(), "Plantilla cargada", Toast.LENGTH_SHORT).show()
+        }
+
+        btnColor.setOnClickListener{
+            val cursor = entradaCodigo.selectionStart
+            val textoAInsertar = "\"#5A438F\""
+            if (cursor >= 0)
+            {
+                entradaCodigo.text.insert(cursor, textoAInsertar)
+            }
+            else
+            {
+                entradaCodigo.append(textoAInsertar)
+            }
+        }
+
         btnCompilar.setOnClickListener{
             procesarCompilacion(entradaCodigo, contenedorFormulario, btnErrores)
         }
+
         btnErrores.setOnClickListener{
             mostrarTablaErrores()
+        }
+    }
+
+    private fun colorearSintaxis(editable: android.text.Editable?)
+    {
+        if (editable == null) return
+        val texto = editable.toString()
+        val spans = editable.getSpans(0, editable.length, android.text.style.ForegroundColorSpan::class.java)
+        for (span in spans)
+        {
+            editable.removeSpan(span)
+        }
+        val patronComentarios = java.util.regex.Pattern.compile("(\\$.*)|(/\\*[\\s\\S]*?\\*/)")
+        var matcher = patronComentarios.matcher(texto)
+        while (matcher.find())
+        {
+            editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#808080")), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        val patronReservadas = java.util.regex.Pattern.compile("\\b(SECTION|TABLE|TEXT|OPEN_QUESTION|IF|ELSE|WHILE|FOR|number|string)\\b")
+        matcher = patronReservadas.matcher(texto)
+        while (matcher.find())
+        {
+            editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#000080")), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        val patronAtributos = java.util.regex.Pattern.compile("\\b(content|width|height|elements|label)\\b\\s*:")
+        matcher = patronAtributos.matcher(texto)
+        while (matcher.find())
+        {
+            editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#F27C07")), matcher.start(), matcher.end() - 1, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        val patronCadenas = java.util.regex.Pattern.compile("\"[^\"\\n]*\"")
+        matcher = patronCadenas.matcher(texto)
+        while (matcher.find())
+        {
+            editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#00913F")), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        val patronNumeros = java.util.regex.Pattern.compile("\\b\\d+(\\.\\d+)?\\b")
+        matcher = patronNumeros.matcher(texto)
+        while (matcher.find())
+        {
+            editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#E5BE01")), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
     }
 
@@ -44,14 +130,13 @@ class FirstFragment : Fragment()
         listaErroresActuales = emptyList()
         btnErrores.isEnabled = false
         val codigoStr = entradaCodigo.text.toString()
-        if (codigoStr.isBlank())
-        {
-            return
-        }
+        if (codigoStr.isBlank()) return
+        var lexer: LexerFormulario? = null
+        var parser: ParserFormulario? = null
         try
         {
-            val lexer = LexerFormulario(StringReader(codigoStr))
-            val parser = ParserFormulario(lexer)
+            lexer = LexerFormulario(StringReader(codigoStr))
+            parser = ParserFormulario(lexer)
             val sym = parser.parse()
             val todosLosErrores = mutableListOf<ErrorCompi>()
             todosLosErrores.addAll(lexer.erroresLexicos)
@@ -61,7 +146,17 @@ class FirstFragment : Fragment()
                 val raizAST = sym.value as? Instruccion
                 val entornoGlobal = Entorno(null, requireContext(), contenedorFormulario)
                 raizAST?.ejecutar(entornoGlobal)
-                Toast.makeText(requireContext(), "¡Formulario Generado con éxito!", Toast.LENGTH_SHORT).show()
+                if (entornoGlobal.erroresSemanticos.isNotEmpty())
+                {
+                    todosLosErrores.addAll(entornoGlobal.erroresSemanticos)
+                    listaErroresActuales = todosLosErrores
+                    btnErrores.isEnabled = true
+                    Toast.makeText(requireContext(), "Formulario generado, pero con Errores Semánticos", Toast.LENGTH_LONG).show()
+                }
+                else
+                {
+                    Toast.makeText(requireContext(), "¡Formulario Generado con éxito!", Toast.LENGTH_SHORT).show()
+                }
             }
             else
             {
@@ -73,7 +168,20 @@ class FirstFragment : Fragment()
         catch (e: Exception)
         {
             e.printStackTrace()
-            Toast.makeText(requireContext(), "Ocurrió un error grave al analizar", Toast.LENGTH_SHORT).show()
+            val erroresRescatados = mutableListOf<ErrorCompi>()
+            lexer?.erroresLexicos?.let { erroresRescatados.addAll(it) }
+            parser?.erroresSintacticos?.let { erroresRescatados.addAll(it) }
+
+            if (erroresRescatados.isNotEmpty())
+            {
+                listaErroresActuales = erroresRescatados
+                btnErrores.isEnabled = true
+                Toast.makeText(requireContext(), "Caida Sintáctico. Se rescataron ${erroresRescatados.size} errores.", Toast.LENGTH_LONG).show()
+            }
+            else
+            {
+                Toast.makeText(requireContext(), "Error grave al compilar", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

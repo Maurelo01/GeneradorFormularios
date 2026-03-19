@@ -3,6 +3,9 @@ import java.util.HashMap;
 import java.util.Map;
 import android.content.Context;
 import android.widget.LinearLayout;
+import com.example.pokemonformularios.reportes.ErrorCompi;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Entorno
 {
@@ -10,6 +13,7 @@ public class Entorno
     private Entorno anterior;
     private Context contexto;
     private LinearLayout layoutActual;
+    private List<ErrorCompi> erroresSemanticos;
 
     public Entorno(Entorno anterior, Context contexto, LinearLayout layoutActual)
     {
@@ -17,6 +21,7 @@ public class Entorno
         this.anterior = anterior;
         this.contexto = contexto;
         this.layoutActual = layoutActual;
+        this.erroresSemanticos = new ArrayList<>();
     }
 
     public Entorno(Entorno anterior)
@@ -27,6 +32,7 @@ public class Entorno
         {
             this.contexto = anterior.getContexto();
             this.layoutActual = anterior.getLayoutActual();
+            this.erroresSemanticos = anterior.getErroresSemanticos();
         }
     }
 
@@ -64,6 +70,14 @@ public class Entorno
         return false;
     }
 
+    public void reportarErrorSemantico(String descripcion)
+    {
+        if (erroresSemanticos != null)
+        {
+            erroresSemanticos.add(new ErrorCompi("Semántico", descripcion, 0, 0));
+        }
+    }
+
     public Context getContexto()
     {
         return contexto;
@@ -71,6 +85,10 @@ public class Entorno
     public LinearLayout getLayoutActual()
     {
         return layoutActual;
+    }
+    public List<ErrorCompi> getErroresSemanticos()
+    {
+        return erroresSemanticos;
     }
     public void setLayoutActual(LinearLayout layoutActual)
     {

@@ -14,7 +14,9 @@ public class AccesoVariable implements Expresion
         Simbolo sim = ent.obtenerVariable(id);
         if (sim == null)
         {
-            System.err.println("Error Semántico: La variable '" + id + "' no ha sido declarada.");
+            String descripcion = "La variable '" + id + "' no ha sido declarada.";
+            ent.reportarErrorSemantico(descripcion);
+            System.err.println("Error Semántico: " + descripcion);
             return null;
         }
         return sim.getValor();
