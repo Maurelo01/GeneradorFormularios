@@ -1,5 +1,6 @@
 package com.example.pokemonformularios.ast;
 import java.util.List;
+import java.util.ArrayList;
 import android.graphics.Color;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -7,7 +8,15 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import java.util.ArrayList;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import org.json.JSONObject;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import android.os.Handler;
+import android.os.Looper;
 
 public class ComponentePregunta implements Instruccion
 {
@@ -21,6 +30,7 @@ public class ComponentePregunta implements Instruccion
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object ejecutar(Entorno ent)
     {
         String label = "Pregunta sin título";
@@ -89,14 +99,83 @@ public class ComponentePregunta implements Instruccion
                     }
                     break;
                 case "DROP":
-                    TextView tvDrop = new TextView(ent.getContexto());
-                    tvDrop.setText("[ Aquí para la PokéAPI");
-                    tvDrop.setTextColor(Color.parseColor("#D32F2F"));
-                    layoutPregunta.addView(tvDrop);
+                    Spinner spinner = new Spinner(ent.getContexto());
+                    List<String> opcionesString = new ArrayList<>();
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(ent.getContexto(), android.R.layout.simple_spinner_item, opcionesString);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinner.setAdapter(adapter);
+                    layoutPregunta.addView(spinner);
+                    boolean requiereApi = false;
+                    int pokeInicio = 1;
+                    int pokeFin = 1;
+                    for (Object obj : opciones)
+                    {
+                        if (obj instanceof Expresion)
+                        {
+                            Object val = ((Expresion) obj).evaluar(ent);
+                            if (val != null && val.toString().startsWith("POKEAPI:"))
+                            {
+                                requiereApi = true;
+                                String[] parts = val.toString().split(":");
+                                pokeInicio = Integer.parseInt(parts[1]);
+                                pokeFin = Integer.parseInt(parts[2]);
+                            }
+                            else
+                            {
+                                opcionesString.add(val != null ? val.toString() : "");
+                            }
+                        }
+                    }
+                    if (requiereApi)
+                    {
+                        opcionesString.add("Cargando Pokémon...");
+                        adapter.notifyDataSetChanged();
+                        cargarPokemon(pokeInicio, pokeFin, opcionesString, adapter);
+                    }
                     break;
             }
             ent.getLayoutActual().addView(layoutPregunta);
         }
         return null;
+    }
+
+    private void cargarPokemon(int inicio, int fin, List<String> opcionesString, ArrayAdapter<String> adapter)
+    {
+        new Thread(() ->
+        {
+            List<String> pokemonesDescargados = new ArrayList<>();
+            for (int i = inicio; i <= fin; i++)
+            {
+                try
+                {
+                    URL url = new URL("https://pokeapi.co/api/v2/pokemon/" + i);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String linea;
+                    while ((linea = reader.readLine()) != null)
+                    {
+                        response.append(linea);
+                    }
+                    reader.close();
+                    JSONObject jsonObject = new JSONObject(response.toString());
+                    String nombre = jsonObject.getString("name");
+                    nombre = nombre.substring(0, 1).toUpperCase() + nombre.substring(1);
+                    pokemonesDescargados.add(nombre);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    pokemonesDescargados.add("Error con la pokedex o PC #" + i);
+                }
+            }
+            new Handler(Looper.getMainLooper()).post(() ->
+            {
+                opcionesString.clear();
+                opcionesString.addAll(pokemonesDescargados);
+                adapter.notifyDataSetChanged();
+            });
+        }).start();
     }
 }
