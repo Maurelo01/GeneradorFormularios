@@ -46,8 +46,8 @@ Digito = [0-9]
 Entero = {Digito}+
 Decimal = {Entero}"."{Entero}
 Identificador = {Letra}({Letra}|{Digito})*
-Cadena = \"[^\"]*\"
-CadenaSinCerrar = \"[^\"\n]*
+Cadena = \"[^\"\n\r]*\"
+CadenaSinCerrar = \"[^\"\n\r]*
 Comentariolinea = \$[^\n]*\n?
 ComentarioBloque = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EspaciosEnBlanco = [ \t\r\n\f]+
@@ -490,6 +490,7 @@ ColorHSL = <{EspaciosEnBlanco}*{Entero}{EspaciosEnBlanco}*,{EspaciosEnBlanco}*{E
     int columna = yycolumn + 1;
     erroresLexicos.add(new ErrorCompi("Léxico", "Cadena sin cerrar: " + lexema, linea, columna));
     System.err.println("Error Léxico en (" + linea + ", " + columna + "): Cadena sin cerrar");
+    return symbol(sym.CADENA, lexema + "\"");
 }
 .
 {
