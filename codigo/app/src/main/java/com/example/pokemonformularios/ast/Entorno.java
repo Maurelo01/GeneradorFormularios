@@ -15,6 +15,13 @@ public class Entorno
     private LinearLayout layoutActual;
     private List<ErrorCompi> erroresSemanticos;
     private List<ComponentePregunta> preguntasFormulario;
+    private StringBuilder pkmBuilder;
+    public int totalSecciones = 0;
+    public int totalPreguntas = 0;
+    public int abiertas = 0;
+    public int desplegables = 0;
+    public int seleccion = 0;
+    public int multiples = 0;
 
     public Entorno(Entorno anterior, Context contexto, LinearLayout layoutActual)
     {
@@ -24,6 +31,7 @@ public class Entorno
         this.layoutActual = layoutActual;
         this.erroresSemanticos = new ArrayList<>();
         this.preguntasFormulario = new ArrayList<>();
+        this.pkmBuilder = new StringBuilder();
     }
 
     public Entorno(Entorno anterior)
@@ -36,6 +44,7 @@ public class Entorno
             this.layoutActual = anterior.getLayoutActual();
             this.erroresSemanticos = anterior.getErroresSemanticos();
             this.preguntasFormulario = anterior.getPreguntasFormulario();
+            this.pkmBuilder = anterior.getPkmBuilder();
         }
     }
 
@@ -81,6 +90,37 @@ public class Entorno
         }
     }
 
+    public void registrarSeccionPKM()
+    {
+        if (this.anterior != null)
+        {
+            this.anterior.registrarSeccionPKM();
+        }
+        else
+        {
+            this.totalSecciones++;
+        }
+    }
+
+    public void registrarPreguntaPKM(String tipoPregunta)
+    {
+        if (this.anterior != null)
+        {
+            this.anterior.registrarPreguntaPKM(tipoPregunta);
+        }
+        else
+        {
+            this.totalPreguntas++;
+            switch (tipoPregunta)
+            {
+                case "OPEN": this.abiertas++; break;
+                case "DROP": this.desplegables++; break;
+                case "SELECT": this.seleccion++; break;
+                case "MULTIPLE": this.multiples++; break;
+            }
+        }
+    }
+
     public void reportarErrorSemantico(String descripcion)
     {
         if (erroresSemanticos != null)
@@ -105,6 +145,36 @@ public class Entorno
     {
         return preguntasFormulario;
     }
+    public StringBuilder getPkmBuilder()
+    {
+        return pkmBuilder;
+    }
+
+    public int getTotalSecciones()
+    {
+        return this.anterior != null ? this.anterior.getTotalSecciones() : this.totalSecciones;
+    }
+    public int getTotalPreguntas()
+    {
+        return this.anterior != null ? this.anterior.getTotalPreguntas() : this.totalPreguntas;
+    }
+    public int getAbiertas()
+    {
+        return this.anterior != null ? this.anterior.getAbiertas() : this.abiertas;
+    }
+    public int getDesplegables()
+    {
+        return this.anterior != null ? this.anterior.getDesplegables() : this.desplegables;
+    }
+    public int getSeleccion()
+    {
+        return this.anterior != null ? this.anterior.getSeleccion() : this.seleccion;
+    }
+    public int getMultiples()
+    {
+        return this.anterior != null ? this.anterior.getMultiples() : this.multiples;
+    }
+
     public void setLayoutActual(LinearLayout layoutActual)
     {
         this.layoutActual = layoutActual;

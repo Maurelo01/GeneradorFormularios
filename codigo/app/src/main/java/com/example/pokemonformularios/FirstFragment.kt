@@ -31,8 +31,9 @@ class FirstFragment : Fragment()
         val contenedorFormulario = view.findViewById<LinearLayout>(R.id.contenedorFormulario)
         val btnPlantilla = view.findViewById<Button>(R.id.btnPlantilla)
         val btnColor = view.findViewById<Button>(R.id.btnColor)
+        val btnExportarPKM = view.findViewById<Button>(R.id.btnExportarPKM)
         btnErrores.isEnabled = false
-
+        btnExportarPKM.visibility = View.GONE
         entradaCodigo.addTextChangedListener(object : android.text.TextWatcher
         {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -75,7 +76,7 @@ class FirstFragment : Fragment()
         }
 
         btnCompilar.setOnClickListener{
-            procesarCompilacion(entradaCodigo, contenedorFormulario, btnErrores)
+            procesarCompilacion(entradaCodigo, contenedorFormulario, btnErrores, btnExportarPKM)
         }
 
         btnErrores.setOnClickListener{
@@ -124,11 +125,12 @@ class FirstFragment : Fragment()
         }
     }
 
-    private fun procesarCompilacion(entradaCodigo: EditText, contenedorFormulario: LinearLayout, btnErrores: Button)
+    private fun procesarCompilacion(entradaCodigo: EditText, contenedorFormulario: LinearLayout, btnErrores: Button, btnExportarPKM: Button)
     {
         contenedorFormulario.removeAllViews()
         listaErroresActuales = emptyList()
         btnErrores.isEnabled = false
+        btnExportarPKM.visibility = View.GONE
         val codigoStr = entradaCodigo.text.toString()
         if (codigoStr.isBlank()) return
         var lexer: LexerFormulario? = null
@@ -146,6 +148,10 @@ class FirstFragment : Fragment()
                 val raizAST = sym.value as? Instruccion
                 val entornoGlobal = Entorno(null, requireContext(), contenedorFormulario)
                 raizAST?.ejecutar(entornoGlobal)
+                btnExportarPKM.visibility = View.VISIBLE
+                btnExportarPKM.setOnClickListener{
+                    mostrarDialogoGuardarPKM(entornoGlobal)
+                }
                 val btnEnviar = Button(requireContext())
                 btnEnviar.text = "Enviar Formulario"
                 btnEnviar.setBackgroundColor(android.graphics.Color.parseColor("#29446F"))
@@ -252,5 +258,71 @@ class FirstFragment : Fragment()
         fila.addView(tvColumna)
 
         return fila
+    }
+
+    private fun guardarArchivoPKM(entorno: Entorno, nombreArchivo: String, autor: String, descripcion: String)
+    {
+        val fecha = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(java.util.Date())
+        val hora = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
+        val metadatos = """
+            ###
+            ###
+            Author: $autor
+            Fecha: $fecha
+            Hora: $hora
+            Description: $descripcion
+            Total de Secciones: ${entorno.totalSecciones}
+            Total de Preguntas: ${entorno.totalPreguntas}
+            Abiertas: ${entorno.abiertas}
+            Desplegables: ${entorno.desplegables}
+            Selección: ${entorno.seleccion}
+            Múltiples: ${entorno.multiples}
+            
+        """.trimIndent()
+        val contenidoFinal = metadatos + "\n" + entorno.pkmBuilder.toString()
+        try
+        {
+            val file = java.io.File(requireContext().getExternalFilesDir(android.os.Environment.DIRECTORY_DOCUMENTS), nombreArchivo)
+            file.writeText(contenidoFinal)
+            Toast.makeText(requireContext(), " Guardado en Documentos:\n$nombreArchivo", Toast.LENGTH_LONG).show()
+            println(" Archivo .PKM Generado \n$contenidoFinal\n ")
+        }
+        catch(e: Exception)
+        {
+            e.printStackTrace()
+            Toast.makeText(requireContext(), "Error al guardar .PKM", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun mostrarDialogoGuardarPKM(entorno: Entorno)
+    {
+        val layout = LinearLayout(requireContext())
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(64, 32, 64, 16)
+        val inputNombreArchivo = EditText(requireContext())
+        inputNombreArchivo.hint = "Nombre del archivo .PKM"
+        val inputAutor = EditText(requireContext())
+        inputAutor.hint = "Nombre del Autor"
+        val inputDesc = EditText(requireContext())
+        inputDesc.hint = "Descripción del formulario"
+        layout.addView(inputNombreArchivo)
+        layout.addView(inputAutor)
+        layout.addView(inputDesc)
+        AlertDialog.Builder(requireContext()).setTitle("Guardar Archivo .PKM").setMessage("Ingresa los metadatos del formulario:").setView(layout).setPositiveButton("Guardar")
+        { _, _ ->
+            val nombreIngresado = inputNombreArchivo.text.toString().trim()
+            val nombreDefinitivo = if (nombreIngresado.isNotBlank())
+            {
+                if (nombreIngresado.endsWith(".pkm")) nombreIngresado else "$nombreIngresado.pkm"
+            }
+            else
+            {
+                val fechaHoraArchivo = java.text.SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", java.util.Locale.getDefault()).format(java.util.Date())
+                "pokemon_form_$fechaHoraArchivo.pkm"
+            }
+            val autor = inputAutor.text.toString().ifBlank{ "Autor Desconocido" }
+            val descripcion = inputDesc.text.toString().ifBlank{ "Sin descripción" }
+            guardarArchivoPKM(entorno, nombreDefinitivo, autor, descripcion)
+        }.setNegativeButton("Cancelar", null).show()
     }
 }
