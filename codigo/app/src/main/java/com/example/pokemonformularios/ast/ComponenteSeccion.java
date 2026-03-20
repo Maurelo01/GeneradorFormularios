@@ -16,6 +16,8 @@ public class ComponenteSeccion implements Instruccion
     public Object ejecutar(Entorno ent)
     {
         System.out.println("Dibujando SECCION...");
+        ent.registrarSeccionPKM();
+        ent.getPkmBuilder().append("<section=100, 100, 0, 0, VERTICAL>\n<content>\n");
         List<Instruccion> elementosHijos = new ArrayList<>();
         for (Atributo attr : atributos)
         {
@@ -35,6 +37,7 @@ public class ComponenteSeccion implements Instruccion
                 }
             }
         }
+        ent.getPkmBuilder().append("</content>\n</section>\n");
         return null;
     }
 }

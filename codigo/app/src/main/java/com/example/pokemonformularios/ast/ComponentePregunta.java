@@ -87,6 +87,7 @@ public class ComponentePregunta implements Instruccion
             tvLabel.setTextColor(Color.parseColor("#333333"));
             tvLabel.setPadding(0, 0, 0, 16);
             layoutPregunta.addView(tvLabel);
+
             switch (tipoPregunta)
             {
                 case "OPEN":
@@ -165,6 +166,39 @@ public class ComponentePregunta implements Instruccion
             }
             ent.getLayoutActual().addView(layoutPregunta);
             ent.registrarPregunta(this);
+        }
+        ent.registrarPreguntaPKM(tipoPregunta);
+        StringBuilder strOptions = new StringBuilder("{");
+        for (int i = 0; i < opciones.size(); i++)
+        {
+            Object exp = opciones.get(i);
+            if (exp instanceof Expresion)
+            {
+                Object val = ((Expresion) exp).evaluar(ent);
+                strOptions.append("\"").append(val != null ? val.toString() : "").append("\"");
+                if (i < opciones.size() - 1) strOptions.append(", ");
+            }
+        }
+        strOptions.append("}");
+        String strCorrect = respuestaCorrecta != null ? respuestaCorrecta.toString() : "-1";
+        if (tipoPregunta.equals("MULTIPLE") && respuestaCorrecta != null)
+        {
+            strCorrect = respuestaCorrecta.toString().replace("[", "{").replace("]", "}");
+        }
+        switch (tipoPregunta)
+        {
+            case "OPEN":
+                ent.getPkmBuilder().append("<open=100, 20, \"").append(label).append("\"/>\n");
+                break;
+            case "SELECT":
+                ent.getPkmBuilder().append("<select=100, 20, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
+                break;
+            case "MULTIPLE":
+                ent.getPkmBuilder().append("<multiple=100, 20, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
+                break;
+            case "DROP":
+                ent.getPkmBuilder().append("<drop=100, 20, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
+                break;
         }
         return null;
     }
