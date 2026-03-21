@@ -188,16 +188,16 @@ public class ComponentePregunta implements Instruccion
         switch (tipoPregunta)
         {
             case "OPEN":
-                ent.getPkmBuilder().append("<open=100, 20, \"").append(label).append("\"/>\n");
+                ent.getPkmBuilder().append("<open=-1, -1, \"").append(label).append("\"/>\n");
                 break;
             case "SELECT":
-                ent.getPkmBuilder().append("<select=100, 20, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
+                ent.getPkmBuilder().append("<select=-1, -1, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
                 break;
             case "MULTIPLE":
-                ent.getPkmBuilder().append("<multiple=100, 20, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
+                ent.getPkmBuilder().append("<multiple=-1, -1, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
                 break;
             case "DROP":
-                ent.getPkmBuilder().append("<drop=100, 20, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
+                ent.getPkmBuilder().append("<drop=-1, -1, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
                 break;
         }
         return null;
@@ -215,7 +215,7 @@ public class ComponentePregunta implements Instruccion
                 if (radioButtonID != -1)
                 {
                     View radioButton = rg.findViewById(radioButtonID);
-                    int indiceSeleccionado = rg.indexOfChild(radioButton) + 1;
+                    int indiceSeleccionado = rg.indexOfChild(radioButton);
                     int indiceCorrecto = Double.valueOf(respuestaCorrecta.toString()).intValue();
                     if (indiceSeleccionado == indiceCorrecto) return 1;
                 }
@@ -238,7 +238,7 @@ public class ComponentePregunta implements Instruccion
                     if (listaCheckboxes.get(i).isChecked())
                     {
                         opcionesMarcadas++;
-                        if (correctas.contains(i + 1))
+                        if (correctas.contains(i))
                         {
                             aciertos++;
                         }
