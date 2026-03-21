@@ -109,7 +109,8 @@ class FirstFragment : Fragment()
         }
     }
 
-    private fun mostrarArchivoPKM(codigoPKM: String) {
+    private fun mostrarArchivoPKM(codigoPKM: String)
+    {
         val contenedorFormulario = view?.findViewById<LinearLayout>(R.id.contenedorFormulario) ?: return
         contenedorFormulario.removeAllViews()
         var seccionActual: LinearLayout? = null
@@ -155,12 +156,19 @@ class FirstFragment : Fragment()
                 val opciones = coincidencia.groupValues[2].split(",").map { it.replace("\"", "").trim() }
                 val correctaStr = coincidencia.groupValues[3].trim()
                 val rg = RadioGroup(requireContext())
-                opciones.forEach { opt ->
-                    val rb = RadioButton(requireContext())
-                    rb.text = opt
-                    rg.addView(rb)
-                }
                 (seccionActual ?: contenedorFormulario).addView(rg)
+                if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
+                {
+                    cargarPokeApiLectura(rg, opciones[0], "SELECT")
+                }
+                else
+                {
+                    opciones.forEach { opt ->
+                        val rb = RadioButton(requireContext())
+                        rb.text = opt
+                        rg.addView(rb)
+                    }
+                }
                 val indexCorrecto = correctaStr.toDoubleOrNull()?.toInt() ?: -1
                 if (indexCorrecto != -1)
                 {
@@ -170,7 +178,7 @@ class FirstFragment : Fragment()
                         if (rbId != -1)
                         {
                             val rb = rg.findViewById<View>(rbId)
-                            val indiceSeleccionado = rg.indexOfChild(rb) + 1
+                            val indiceSeleccionado = rg.indexOfChild(rb)
                             if (indiceSeleccionado == indexCorrecto) 1 else 0
                         }
                         else 0
@@ -185,11 +193,19 @@ class FirstFragment : Fragment()
                 val opciones = coincidencia.groupValues[2].split(",").map { it.replace("\"", "").trim() }
                 val correctaStr = coincidencia.groupValues[3].trim()
                 val listaCheckboxes = mutableListOf<CheckBox>()
-                opciones.forEach { opt ->
-                    val cb = CheckBox(requireContext())
-                    cb.text = opt
-                    (seccionActual ?: contenedorFormulario).addView(cb)
-                    listaCheckboxes.add(cb)
+                val contenedorMultiple = seccionActual ?: contenedorFormulario
+                if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
+                {
+                    cargarPokeApiLectura(contenedorMultiple, opciones[0], "MULTIPLE", listaCheckboxes)
+                }
+                else
+                {
+                    opciones.forEach { opt ->
+                        val cb = CheckBox(requireContext())
+                        cb.text = opt
+                        contenedorMultiple.addView(cb)
+                        listaCheckboxes.add(cb)
+                    }
                 }
                 val correctasLimpio = correctaStr.replace("{", "").replace("}", "")
                 val correctasIds = correctasLimpio.split(",").mapNotNull { it.trim().toDoubleOrNull()?.toInt() }
@@ -204,7 +220,7 @@ class FirstFragment : Fragment()
                             if (listaCheckboxes[i].isChecked)
                             {
                                 marcadas++
-                                if (correctasIds.contains(i + 1)) aciertos++
+                                if (correctasIds.contains(i)) aciertos++
                             }
                         }
                         if (aciertos == correctasIds.size && marcadas == correctasIds.size) 1 else 0
@@ -219,9 +235,10 @@ class FirstFragment : Fragment()
                 val opciones = coincidencia.groupValues[2].split(",").map { it.replace("\"", "").trim() }
                 val correctaStr = coincidencia.groupValues[3].trim()
                 val spinner = Spinner(requireContext())
+                (seccionActual ?: contenedorFormulario).addView(spinner)
                 if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
                 {
-                    cargarPokeApiLectura(spinner, opciones[0])
+                    cargarPokeApiLectura(spinner, opciones[0], "DROP")
                 }
                 else
                 {
@@ -277,15 +294,18 @@ class FirstFragment : Fragment()
         parent.addView(tv)
     }
 
-    private fun cargarPokeApiLectura(spinner: Spinner, comando: String)
+    private fun cargarPokeApiLectura(vistaContenedor: View, comando: String, tipoPregunta: String, listaCheckboxes: MutableList<CheckBox>? = null)
     {
         val partes = comando.split(":")
         val inicio = partes[1].toInt()
         val fin = partes[2].toInt()
-        val opcionesString = mutableListOf("Cargando Pokémon...")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, opcionesString)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinner.adapter = adapter
+        val tvCargando = TextView(vistaContenedor.context)
+        tvCargando.text = "Cargando Pokemon..."
+        tvCargando.setTextColor(android.graphics.Color.GRAY)
+        if (vistaContenedor is ViewGroup && vistaContenedor !is Spinner)
+        {
+            vistaContenedor.addView(tvCargando)
+        }
         Thread {
             val descargados = mutableListOf<String>()
             for (i in inicio..fin)
@@ -307,10 +327,33 @@ class FirstFragment : Fragment()
                 }
             }
             activity?.runOnUiThread{
-                opcionesString.clear()
-                opcionesString.add(" Selecciona ")
-                opcionesString.addAll(descargados)
-                adapter.notifyDataSetChanged()
+                if (vistaContenedor is ViewGroup && vistaContenedor !is Spinner)
+                {
+                    vistaContenedor.removeView(tvCargando)
+                }
+                if (tipoPregunta == "DROP" && vistaContenedor is Spinner)
+                {
+                    val adapter = ArrayAdapter(vistaContenedor.context, android.R.layout.simple_spinner_item, listOf("--- Selecciona ---") + descargados)
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    vistaContenedor.adapter = adapter
+                }
+                else if (tipoPregunta == "SELECT" && vistaContenedor is RadioGroup)
+                {
+                    descargados.forEach{ nombre ->
+                        val rb = RadioButton(vistaContenedor.context)
+                        rb.text = nombre
+                        vistaContenedor.addView(rb)
+                    }
+                }
+                else if (tipoPregunta == "MULTIPLE" && vistaContenedor is LinearLayout)
+                {
+                    descargados.forEach { nombre ->
+                        val cb = CheckBox(vistaContenedor.context)
+                        cb.text = nombre
+                        vistaContenedor.addView(cb)
+                        listaCheckboxes?.add(cb)
+                    }
+                }
             }
         }.start()
     }
