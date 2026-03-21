@@ -285,7 +285,7 @@ declaracion ::=
     :}
     | TYPE_SPECIAL ID:id IGUAL_ASIG componente:c
     {:
-        RESULT = new Declaracion("special", id, null);
+        RESULT = new DeclaracionEspecial(id.toString(), c);
     :}
     | TYPE_NUMBER error
     {:
@@ -775,13 +775,6 @@ valor_enum ::=
 funcion_especial ::=
     ID:id PUNTO FUNC_DRAW PAR_IZQ lista_arreglo:args PAR_DER
     {:
-        if (args.isEmpty()) 
-        {
-            RESULT = new NodoAST("DRAW");
-        }
-        else
-        {
-            RESULT = new NodoAST("DRAW_WITH_ARGS");
-        }
+        RESULT = new FuncionDraw(id.toString(), args);
     :}
 ;
