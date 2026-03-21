@@ -18,6 +18,26 @@ class FirstFragment : Fragment()
 {
     private var listaErroresActuales: List<ErrorCompi> = emptyList()
 
+    private val abrirArchivoPKM = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent())
+    { uri ->
+        uri?.let{
+            try
+            {
+                val inputStream = requireContext().contentResolver.openInputStream(it)
+                val contenido = inputStream?.bufferedReader().use { reader -> reader?.readText() }
+                if (contenido != null)
+                {
+                    mostrarArchivoPKM(contenido)
+                }
+            }
+            catch (e: Exception)
+            {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Error al leer el archivo", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
     {
         return inflater.inflate(R.layout.fragment_first, container, false)
@@ -32,6 +52,7 @@ class FirstFragment : Fragment()
         val btnPlantilla = view.findViewById<Button>(R.id.btnPlantilla)
         val btnColor = view.findViewById<Button>(R.id.btnColor)
         val btnExportarPKM = view.findViewById<Button>(R.id.btnExportarPKM)
+        val btnCargarPKM = view.findViewById<Button>(R.id.btnCargarPKM)
         btnErrores.isEnabled = false
         btnExportarPKM.visibility = View.GONE
         entradaCodigo.addTextChangedListener(object : android.text.TextWatcher
@@ -75,6 +96,10 @@ class FirstFragment : Fragment()
             }
         }
 
+        btnCargarPKM.setOnClickListener{
+            abrirArchivoPKM.launch("*/*")
+        }
+
         btnCompilar.setOnClickListener{
             procesarCompilacion(entradaCodigo, contenedorFormulario, btnErrores, btnExportarPKM)
         }
@@ -82,6 +107,212 @@ class FirstFragment : Fragment()
         btnErrores.setOnClickListener{
             mostrarTablaErrores()
         }
+    }
+
+    private fun mostrarArchivoPKM(codigoPKM: String) {
+        val contenedorFormulario = view?.findViewById<LinearLayout>(R.id.contenedorFormulario) ?: return
+        contenedorFormulario.removeAllViews()
+        var seccionActual: LinearLayout? = null
+        val lineas = codigoPKM.split("\n")
+        val regexSeccion = Regex("<section=.*?>")
+        val regexCierreSeccion = Regex("</section>")
+        val regexOpen = Regex("<open=\\d+,\\s*\\d+,\\s*\"(.*?)\"/>")
+        val regexSelect = Regex("<select=\\d+,\\s*\\d+,\\s*\"(.*?)\",\\s*\\{(.*?)\\},\\s*(.+?)/>")
+        val regexMultiple = Regex("<multiple=\\d+,\\s*\\d+,\\s*\"(.*?)\",\\s*\\{(.*?)\\},\\s*(.+?)/>")
+        val regexDrop = Regex("<drop=\\d+,\\s*\\d+,\\s*\"(.*?)\",\\s*\\{(.*?)\\},\\s*(.+?)/>")
+        val evaluadores = mutableListOf<() -> Int>()
+        var totalCalificables = 0
+        for (linea in lineas)
+        {
+            val l = linea.trim()
+            if (regexSeccion.matches(l))
+            {
+                seccionActual = LinearLayout(requireContext())
+                seccionActual.orientation = LinearLayout.VERTICAL
+                val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                params.setMargins(0, 16, 0, 48)
+                seccionActual.layoutParams = params
+                contenedorFormulario.addView(seccionActual)
+            }
+            else if (regexCierreSeccion.matches(l))
+            {
+                seccionActual = null
+            }
+            else if (regexOpen.matches(l))
+            {
+                val coincidencia = regexOpen.find(l)!!
+                val labelLimpio = coincidencia.groupValues[1].replace("\"", "")
+                agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
+                val et = EditText(requireContext())
+                et.hint = "Tu respuesta..."
+                (seccionActual ?: contenedorFormulario).addView(et)
+            }
+            else if (regexSelect.matches(l))
+            {
+                val coincidencia = regexSelect.find(l)!!
+                val labelLimpio = coincidencia.groupValues[1].replace("\"", "")
+                agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
+                val opciones = coincidencia.groupValues[2].split(",").map { it.replace("\"", "").trim() }
+                val correctaStr = coincidencia.groupValues[3].trim()
+                val rg = RadioGroup(requireContext())
+                opciones.forEach { opt ->
+                    val rb = RadioButton(requireContext())
+                    rb.text = opt
+                    rg.addView(rb)
+                }
+                (seccionActual ?: contenedorFormulario).addView(rg)
+                val indexCorrecto = correctaStr.toDoubleOrNull()?.toInt() ?: -1
+                if (indexCorrecto != -1)
+                {
+                    totalCalificables++
+                    evaluadores.add{
+                        val rbId = rg.checkedRadioButtonId
+                        if (rbId != -1)
+                        {
+                            val rb = rg.findViewById<View>(rbId)
+                            val indiceSeleccionado = rg.indexOfChild(rb) + 1
+                            if (indiceSeleccionado == indexCorrecto) 1 else 0
+                        }
+                        else 0
+                    }
+                }
+            }
+            else if (regexMultiple.matches(l))
+            {
+                val coincidencia = regexMultiple.find(l)!!
+                val labelLimpio = coincidencia.groupValues[1].replace("\"", "")
+                agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
+                val opciones = coincidencia.groupValues[2].split(",").map { it.replace("\"", "").trim() }
+                val correctaStr = coincidencia.groupValues[3].trim()
+                val listaCheckboxes = mutableListOf<CheckBox>()
+                opciones.forEach { opt ->
+                    val cb = CheckBox(requireContext())
+                    cb.text = opt
+                    (seccionActual ?: contenedorFormulario).addView(cb)
+                    listaCheckboxes.add(cb)
+                }
+                val correctasLimpio = correctaStr.replace("{", "").replace("}", "")
+                val correctasIds = correctasLimpio.split(",").mapNotNull { it.trim().toDoubleOrNull()?.toInt() }
+                if (correctasIds.isNotEmpty() && correctasIds[0] != -1)
+                {
+                    totalCalificables++
+                    evaluadores.add{
+                        var marcadas = 0
+                        var aciertos = 0
+                        for (i in listaCheckboxes.indices)
+                        {
+                            if (listaCheckboxes[i].isChecked)
+                            {
+                                marcadas++
+                                if (correctasIds.contains(i + 1)) aciertos++
+                            }
+                        }
+                        if (aciertos == correctasIds.size && marcadas == correctasIds.size) 1 else 0
+                    }
+                }
+            }
+            else if (regexDrop.matches(l))
+            {
+                val coincidencia = regexDrop.find(l)!!
+                val labelLimpio = coincidencia.groupValues[1].replace("\"", "")
+                agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
+                val opciones = coincidencia.groupValues[2].split(",").map { it.replace("\"", "").trim() }
+                val correctaStr = coincidencia.groupValues[3].trim()
+                val spinner = Spinner(requireContext())
+                if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
+                {
+                    cargarPokeApiLectura(spinner, opciones[0])
+                }
+                else
+                {
+                    val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listOf(" Selecciona ") + opciones)
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinner.adapter = adapter
+                }
+                (seccionActual ?: contenedorFormulario).addView(spinner)
+                val indexCorrecto = correctaStr.toDoubleOrNull()?.toInt() ?: -1
+                if (indexCorrecto != -1)
+                {
+                    totalCalificables++
+                    evaluadores.add{
+                        val indiceSeleccionado = spinner.selectedItemPosition
+                        if (indiceSeleccionado == indexCorrecto) 1 else 0
+                    }
+                }
+            }
+        }
+        val btnEnviar = Button(requireContext())
+        btnEnviar.text = "ENVIAR FORMULARIO"
+        btnEnviar.setBackgroundColor(android.graphics.Color.parseColor("#29446F"))
+        btnEnviar.setTextColor(android.graphics.Color.WHITE)
+        val paramsBtn = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        paramsBtn.setMargins(0, 32, 0, 32)
+        btnEnviar.layoutParams = paramsBtn
+        btnEnviar.setOnClickListener {
+            var totalPuntos = 0
+            for (evaluador in evaluadores)
+            {
+                totalPuntos += evaluador()
+            }
+            if (totalCalificables > 0)
+            {
+                AlertDialog.Builder(requireContext()).setTitle("Formulario Enviado").setMessage("Tu puntuación es:\n$totalPuntos de $totalCalificables correctas.").setPositiveButton("Aceptar", null).show()
+            }
+            else
+            {
+                Toast.makeText(requireContext(), "Formulario enviado exitosamente.", Toast.LENGTH_LONG).show()
+            }
+        }
+        contenedorFormulario.addView(btnEnviar)
+        Toast.makeText(requireContext(), "Formulario .PKM cargado y listo", Toast.LENGTH_LONG).show()
+    }
+
+    private fun agregarLabelPKM(parent: LinearLayout, text: String)
+    {
+        val tv = TextView(requireContext())
+        tv.text = text
+        tv.textSize = 16f
+        tv.setTextColor(android.graphics.Color.parseColor("#333333"))
+        tv.setPadding(0, 16, 0, 16)
+        parent.addView(tv)
+    }
+
+    private fun cargarPokeApiLectura(spinner: Spinner, comando: String)
+    {
+        val partes = comando.split(":")
+        val inicio = partes[1].toInt()
+        val fin = partes[2].toInt()
+        val opcionesString = mutableListOf("Cargando Pokémon...")
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, opcionesString)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
+        Thread {
+            val descargados = mutableListOf<String>()
+            for (i in inicio..fin)
+            {
+                try
+                {
+                    val url = java.net.URL("https://pokeapi.co/api/v2/pokemon/$i")
+                    val conn = url.openConnection() as java.net.HttpURLConnection
+                    conn.requestMethod = "GET"
+                    val response = conn.inputStream.bufferedReader().use{ it.readText() }
+                    val jsonObject = org.json.JSONObject(response)
+                    var nombre = jsonObject.getString("name")
+                    nombre = nombre.replaceFirstChar { it.uppercase() }
+                    descargados.add(nombre)
+                }
+                catch (e: Exception)
+                {
+                    descargados.add("Error #$i")
+                }
+            }
+            activity?.runOnUiThread{
+                opcionesString.clear()
+                opcionesString.add(" Selecciona ")
+                opcionesString.addAll(descargados)
+                adapter.notifyDataSetChanged()
+            }
+        }.start()
     }
 
     private fun colorearSintaxis(editable: android.text.Editable?)
@@ -282,9 +513,10 @@ class FirstFragment : Fragment()
         val contenidoFinal = metadatos + "\n" + entorno.pkmBuilder.toString()
         try
         {
-            val file = java.io.File(requireContext().getExternalFilesDir(android.os.Environment.DIRECTORY_DOCUMENTS), nombreArchivo)
+            val carpetaDestino = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
+            val file = java.io.File(carpetaDestino, nombreArchivo)
             file.writeText(contenidoFinal)
-            Toast.makeText(requireContext(), " Guardado en Documentos:\n$nombreArchivo", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), " Guardado en Descargas:\n$nombreArchivo", Toast.LENGTH_LONG).show()
             println(" Archivo .PKM Generado \n$contenidoFinal\n ")
         }
         catch(e: Exception)
