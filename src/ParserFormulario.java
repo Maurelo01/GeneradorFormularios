@@ -1142,7 +1142,7 @@ class CUP$ParserFormulario$actions {
 		int cright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
 		Instruccion c = (Instruccion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new Declaracion("special", id, null);
+        RESULT = new DeclaracionEspecial(id.toString(), c);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("declaracion",3, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -2698,14 +2698,7 @@ class CUP$ParserFormulario$actions {
 		int argsright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
 		ArrayList<Object> args = (ArrayList<Object>)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        if (args.isEmpty()) 
-        {
-            RESULT = new NodoAST("DRAW");
-        }
-        else
-        {
-            RESULT = new NodoAST("DRAW_WITH_ARGS");
-        }
+        RESULT = new FuncionDraw(id.toString(), args);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("funcion_especial",25, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-5)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }

@@ -1142,7 +1142,7 @@ class CUP$ParserFormulario$actions {
 		int cright = ((Symbol)CUP$ParserFormulario$stack.peek()).right;
 		Instruccion c = (Instruccion)((Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new Declaracion("special", id, null);
+        RESULT = new DeclaracionEspecial(id.toString(), c);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("declaracion",3, ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -2698,14 +2698,7 @@ class CUP$ParserFormulario$actions {
 		int argsright = ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
 		ArrayList<Object> args = (ArrayList<Object>)((Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		
-        if (args.isEmpty()) 
-        {
-            RESULT = new NodoAST("DRAW");
-        }
-        else
-        {
-            RESULT = new NodoAST("DRAW_WITH_ARGS");
-        }
+        RESULT = new FuncionDraw(id.toString(), args);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("funcion_especial",25, ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-5)), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
