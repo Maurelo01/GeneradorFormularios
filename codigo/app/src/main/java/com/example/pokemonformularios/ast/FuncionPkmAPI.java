@@ -16,12 +16,23 @@ public class FuncionPkmAPI implements Expresion
     @Override
     public Object evaluar(Entorno ent)
     {
-        Object valInicio = inicio.evaluar(ent);
-        Object valFin = fin.evaluar(ent);
-        int inicio = 1;
-        int fin = 10;
-        if (valInicio instanceof Double) inicio = ((Double) valInicio).intValue();
-        if (valFin instanceof Double) fin = ((Double) valFin).intValue();
-        return "POKEAPI:" + inicio + ":" + fin;
+        try
+        {
+            Object valInicio = inicio != null ? inicio.evaluar(ent) : 1.0;
+            Object valFin = fin != null ? fin.evaluar(ent) : 1.0;
+
+            int numInicio = 1;
+            int numFin = 10;
+
+            if (valInicio instanceof Double) numInicio = ((Double) valInicio).intValue();
+            if (valFin instanceof Double) numFin = ((Double) valFin).intValue();
+
+            return "POKEAPI:" + numInicio + ":" + numFin;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return "POKEAPI:1:1";
+        }
     }
 }

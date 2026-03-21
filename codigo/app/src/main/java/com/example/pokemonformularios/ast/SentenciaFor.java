@@ -1,4 +1,6 @@
 package com.example.pokemonformularios.ast;
+import com.example.pokemonformularios.reportes.ErrorCompi;
+
 import java.util.List;
 
 public class SentenciaFor implements Instruccion
@@ -19,28 +21,50 @@ public class SentenciaFor implements Instruccion
     @Override
     public Object ejecutar(Entorno ent)
     {
+        if (!ent.existeVariable(idVariable))
+        {
+            ent.agregarVariable(idVariable, "number", 0.0);
+        }
+        else
+        {
+            String tipo = ent.obtenerTipoVariable(idVariable);
+            if (!"number".equals(tipo))
+            {
+                ent.getErroresSemanticos().add(new ErrorCompi("Semántico", "La variable del FOR '" + idVariable + "' ya existe y no es de tipo number", 0, 0));
+                return null;
+            }
+        }
         Object valInicio = inicio.evaluar(ent);
         Object valFin = fin.evaluar(ent);
         if (valInicio instanceof Double && valFin instanceof Double)
         {
-            int start = ((Double) valInicio).intValue();
-            int end = ((Double) valFin).intValue();
-
+            double start = (Double) valInicio;
+            double end = (Double) valFin;
             System.out.println(" Iniciando FOR desde " + start + " hasta " + end);
-
-            for (int i = start; i <= end; i++)
+            ent.actualizarVariable(idVariable, start);
+            int contadorSeguridad = 0;
+            while (true)
             {
-                Entorno entornoLocal = new Entorno(ent);
-                entornoLocal.agregarVariable(idVariable, "number", (double) i);
+                Object actualObj = ent.obtenerValorVariable(idVariable);
+                double valorActual = 0.0;
+                if (actualObj instanceof Double) valorActual = (Double) actualObj;
+                if (valorActual > end) break;
                 for (Instruccion instr : instrucciones)
                 {
-                    if (instr != null) instr.ejecutar(entornoLocal);
+                    if (instr != null) instr.ejecutar(ent);
+                }
+                ent.actualizarVariable(idVariable, valorActual + 1.0);
+                contadorSeguridad++;
+                if (contadorSeguridad > 100)
+                {
+                    System.err.println("Advertencia: Ciclo FOR detenido por seguridad.");
+                    break;
                 }
             }
         }
         else
         {
-            System.err.println("Error Semántico: Los límites del FOR deben ser números.");
+            ent.getErroresSemanticos().add(new ErrorCompi("Semántico", "Los límites del FOR deben ser numéros.", 0, 0));
         }
         return null;
     }

@@ -33,18 +33,44 @@ public class ComponenteTexto implements Instruccion
             System.err.println("Error Semántico: El componente TEXT requiere el atributo 'content'.");
             return null;
         }
-        if (ent.getContexto() != null && ent.getLayoutActual() != null) {
-            TextView textViewAndroid = new TextView(ent.getContexto());
-            textViewAndroid.setText(contenido);
-            textViewAndroid.setTextColor(Color.BLACK);
-            textViewAndroid.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-            textViewAndroid.setPadding(0, 8, 0, 8);
-            ent.getLayoutActual().addView(textViewAndroid);
+        if (ent.getContexto() != null && ent.getLayoutActual() != null)
+        {
+            TextView tv = new TextView(ent.getContexto());
+            tv.setText(generarEmojisJava(contenido));
+            tv.setTextColor(Color.BLACK);
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            tv.setPadding(0, 8, 0, 8);
+            ent.getLayoutActual().addView(tv);
         }
         else
         {
             System.out.println(" Generando Componente de TEXTO: " + contenido);
         }
+        ent.getPkmBuilder().append("<text=-1, -1, \"").append(contenido).append("\"/>\n");
         return null;
+    }
+
+    private String generarEmojisJava(String textoOriginal)
+    {
+        if (textoOriginal == null) return "";
+        String texto = textoOriginal;
+        texto = texto.replaceAll("@\\[:\\)+\\]|@\\[:smile:\\]", "\uD83D\uDE00");
+        texto = texto.replaceAll("@\\[:\\(+\\]|@\\[:sad:\\]", "\uD83E\uDD72️");
+        texto = texto.replaceAll("@\\[:\\]+\\]|@\\[:serious:\\]", "\uD83D\uDE10");
+        texto = texto.replaceAll("@\\[<+3+\\]|@\\[:heart:\\]", "❤\uFE0F");
+        texto = texto.replaceAll("@\\[:\\^\\^:\\]|@\\[:cat:\\]", "\uD83D\uDE3A");
+        texto = texto.replaceAll("@\\[:star:\\]", "⭐");
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("@\\[:star[:-](\\d+):?\\]");
+        java.util.regex.Matcher matcher = pattern.matcher(texto);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find())
+        {
+            int cantidad = Integer.parseInt(matcher.group(1));
+            StringBuilder estrellas = new StringBuilder();
+            for (int i = 0; i < cantidad; i++) estrellas.append("⭐");
+            matcher.appendReplacement(sb, estrellas.toString());
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 }

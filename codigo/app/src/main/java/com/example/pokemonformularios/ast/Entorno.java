@@ -174,9 +174,26 @@ public class Entorno
     {
         return this.anterior != null ? this.anterior.getMultiples() : this.multiples;
     }
-
     public void setLayoutActual(LinearLayout layoutActual)
     {
         this.layoutActual = layoutActual;
+    }
+    public boolean existeVariable(String id)
+    {
+        return obtenerVariable(id) != null;
+    }
+    public String obtenerTipoVariable(String id)
+    {
+        Simbolo sim = obtenerVariable(id);
+        return sim != null ? sim.getTipo() : "";
+    }
+    public void actualizarVariable(String id, Object valor)
+    {
+        reasignarVariable(id, valor);
+    }
+    public Object obtenerValorVariable(String id)
+    {
+        Simbolo sim = obtenerVariable(id);
+        return sim != null ? sim.getValor() : null;
     }
 }

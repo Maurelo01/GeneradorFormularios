@@ -401,6 +401,11 @@ ColorHSL = <{EspaciosEnBlanco}*{Entero}{EspaciosEnBlanco}*,{EspaciosEnBlanco}*{E
 }
 
 /***** SIGNOS DE AGRUPACIÓN Y PUNTUACIÓN *****/
+"."
+{
+    return symbol(sym.PUNTO, yytext());
+}
+
 "("
 {
     return symbol(sym.PAR_IZQ, yytext());

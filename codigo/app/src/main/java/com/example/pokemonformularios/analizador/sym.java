@@ -36,7 +36,7 @@ public class sym {
   public static final int FUNC_POKEMON = 48;
   public static final int TYPE_SPECIAL = 4;
   public static final int COMA = 71;
-  public static final int ENTERO = 80;
+  public static final int ENTERO = 81;
   public static final int MODULO = 54;
   public static final int ATTR_ORIENTATION = 21;
   public static final int TYPE_NUMBER = 2;
@@ -45,7 +45,7 @@ public class sym {
   public static final int ENUM_DOUBLE = 35;
   public static final int WHILE = 14;
   public static final int CORCHETE_IZQ = 67;
-  public static final int DECIMAL = 79;
+  public static final int DECIMAL = 80;
   public static final int ATTR_HEIGHT = 18;
   public static final int ATTR_CORRECT = 27;
   public static final int ATTR_WIDTH = 17;
@@ -60,25 +60,26 @@ public class sym {
   public static final int MENOR = 58;
   public static final int MAS = 49;
   public static final int ENUM_SANS_SERIF = 31;
-  public static final int PUNTO_Y_COMA = 74;
+  public static final int PUNTO_Y_COMA = 75;
   public static final int PAR_IZQ = 65;
   public static final int EOF = 0;
+  public static final int PUNTO = 74;
   public static final int LLAVE_DER = 70;
   public static final int ENUM_VERTICAL = 28;
   public static final int ATTR_POINTY = 20;
   public static final int ATTR_POINTX = 19;
-  public static final int PUNTO_PUNTO = 76;
-  public static final int IN = 75;
+  public static final int PUNTO_PUNTO = 77;
+  public static final int IN = 76;
   public static final int OR = 62;
   public static final int error = 1;
   public static final int IF = 12;
   public static final int IGUAL_ASIG = 64;
-  public static final int ID = 78;
+  public static final int ID = 79;
   public static final int COLOR_SKY = 40;
   public static final int ATTR_OPTIONS = 26;
   public static final int COLOR_GREEN = 38;
   public static final int ATTR_LABEL = 25;
-  public static final int CADENA = 77;
+  public static final int CADENA = 78;
   public static final int COLOR_RED = 36;
   public static final int TYPE_STRING = 3;
   public static final int AND = 61;
@@ -162,6 +163,7 @@ public class sym {
   "COMA",
   "DOS_PUNTOS",
   "COMODIN",
+  "PUNTO",
   "PUNTO_Y_COMA",
   "IN",
   "PUNTO_PUNTO",
