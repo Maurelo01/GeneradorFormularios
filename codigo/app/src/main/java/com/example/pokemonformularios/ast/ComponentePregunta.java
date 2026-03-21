@@ -82,12 +82,33 @@ public class ComponentePregunta implements Instruccion
             params.setMargins(0, 16, 0, 48);
             layoutPregunta.setLayoutParams(params);
             TextView tvLabel = new TextView(ent.getContexto());
-            tvLabel.setText(label);
+            tvLabel.setText(generarEmojisJava(label));
             tvLabel.setTextSize(16f);
             tvLabel.setTextColor(Color.parseColor("#333333"));
             tvLabel.setPadding(0, 0, 0, 16);
             layoutPregunta.addView(tvLabel);
-
+            boolean requiereApi = false;
+            int pokeInicio = 1;
+            int pokeFin = 1;
+            List<String> opcionesNormis = new ArrayList<>();
+            for (Object obj : opciones)
+            {
+                if (obj instanceof Expresion)
+                {
+                    Object val = ((Expresion) obj).evaluar(ent);
+                    if (val != null && val.toString().startsWith("POKEAPI:"))
+                    {
+                        requiereApi = true;
+                        String[] parts = val.toString().split(":");
+                        pokeInicio = Integer.parseInt(parts[1]);
+                        pokeFin = Integer.parseInt(parts[2]);
+                    }
+                    else
+                    {
+                        opcionesNormis.add(val != null ? val.toString() : "");
+                    }
+                }
+            }
             switch (tipoPregunta)
             {
                 case "OPEN":
@@ -98,14 +119,16 @@ public class ComponentePregunta implements Instruccion
                     break;
                 case "SELECT":
                     RadioGroup radioGroup = new RadioGroup(ent.getContexto());
-                    for (Object obj : opciones)
+                    if (requiereApi)
                     {
-                        if (obj instanceof Expresion)
+                        cargarPokemon(pokeInicio, pokeFin, radioGroup, "SELECT");
+                    }
+                    else
+                    {
+                        for (String opt : opcionesNormis)
                         {
-                            Object val = ((Expresion) obj).evaluar(ent);
-                            String textoOpcion = val != null ? val.toString() : "";
                             RadioButton rb = new RadioButton(ent.getContexto());
-                            rb.setText(textoOpcion);
+                            rb.setText(generarEmojisJava(opt));
                             radioGroup.addView(rb);
                         }
                     }
@@ -113,14 +136,16 @@ public class ComponentePregunta implements Instruccion
                     this.vistaEntrada = radioGroup;
                     break;
                 case "MULTIPLE":
-                    for (Object obj : opciones)
+                    if (requiereApi)
                     {
-                        if (obj instanceof Expresion)
+                        cargarPokemon(pokeInicio, pokeFin, layoutPregunta, "MULTIPLE");
+                    }
+                    else
+                    {
+                        for (String opt : opcionesNormis)
                         {
-                            Object val = ((Expresion) obj).evaluar(ent);
-                            String textoOpcion = val != null ? val.toString() : "";
                             CheckBox cb = new CheckBox(ent.getContexto());
-                            cb.setText(textoOpcion);
+                            cb.setText(generarEmojisJava(opt));
                             layoutPregunta.addView(cb);
                             this.listaCheckboxes.add(cb);
                         }
@@ -128,40 +153,26 @@ public class ComponentePregunta implements Instruccion
                     break;
                 case "DROP":
                     Spinner spinner = new Spinner(ent.getContexto());
-                    List<String> opcionesString = new ArrayList<>();
-                    opcionesString.add(" Selecciona ");
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(ent.getContexto(), android.R.layout.simple_spinner_item, opcionesString);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    spinner.setAdapter(adapter);
-                    layoutPregunta.addView(spinner);
-                    this.vistaEntrada = spinner;
-                    boolean requiereApi = false;
-                    int pokeInicio = 1;
-                    int pokeFin = 1;
-                    for (Object obj : opciones)
-                    {
-                        if (obj instanceof Expresion)
-                        {
-                            Object val = ((Expresion) obj).evaluar(ent);
-                            if (val != null && val.toString().startsWith("POKEAPI:"))
-                            {
-                                requiereApi = true;
-                                String[] parts = val.toString().split(":");
-                                pokeInicio = Integer.parseInt(parts[1]);
-                                pokeFin = Integer.parseInt(parts[2]);
-                            }
-                            else
-                            {
-                                opcionesString.add(val != null ? val.toString() : "");
-                            }
-                        }
-                    }
                     if (requiereApi)
                     {
-                        opcionesString.add("Cargando Pokémon...");
-                        adapter.notifyDataSetChanged();
-                        cargarPokemon(pokeInicio, pokeFin, opcionesString, adapter);
+                        List<String> cargando = new ArrayList<>();
+                        cargando.add("Cargando Pokémon...");
+                        ArrayAdapter<String> adapterTemp = new ArrayAdapter<>(ent.getContexto(), android.R.layout.simple_spinner_item, cargando);
+                        adapterTemp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinner.setAdapter(adapterTemp);
+                        cargarPokemon(pokeInicio, pokeFin, spinner, "DROP");
                     }
+                    else
+                    {
+                        List<String> opcionesStr = new ArrayList<>();
+                        opcionesStr.add(" Selecciona ");
+                        for (String opt : opcionesNormis) opcionesStr.add(generarEmojisJava(opt));
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(ent.getContexto(), android.R.layout.simple_spinner_item, opcionesStr);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinner.setAdapter(adapter);
+                    }
+                    layoutPregunta.addView(spinner);
+                    this.vistaEntrada = spinner;
                     break;
             }
             ent.getLayoutActual().addView(layoutPregunta);
@@ -225,7 +236,7 @@ public class ComponentePregunta implements Instruccion
                 Spinner sp = (Spinner) vistaEntrada;
                 int indiceSeleccionado = sp.getSelectedItemPosition();
                 int indiceCorrecto = Double.valueOf(respuestaCorrecta.toString()).intValue();
-                if (indiceSeleccionado == indiceCorrecto) return 1;
+                if (indiceSeleccionado -1 == indiceCorrecto) return 1;
             }
             else if (tipoPregunta.equals("MULTIPLE"))
             {
@@ -263,11 +274,11 @@ public class ComponentePregunta implements Instruccion
         return respuestaCorrecta != null && !tipoPregunta.equals("OPEN");
     }
 
-    private void cargarPokemon(int inicio, int fin, List<String> opcionesString, ArrayAdapter<String> adapter)
+    private void cargarPokemon(int inicio, int fin, View contenedor, String tipoPregunta)
     {
         new Thread(() ->
         {
-            List<String> pokemonesDescargados = new ArrayList<>();
+            List<String> pokemones = new ArrayList<>();
             for (int i = inicio; i <= fin; i++)
             {
                 try
@@ -278,28 +289,76 @@ public class ComponentePregunta implements Instruccion
                     BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                     StringBuilder response = new StringBuilder();
                     String linea;
-                    while ((linea = reader.readLine()) != null)
-                    {
-                        response.append(linea);
-                    }
+                    while ((linea = reader.readLine()) != null) response.append(linea);
                     reader.close();
                     JSONObject jsonObject = new JSONObject(response.toString());
                     String nombre = jsonObject.getString("name");
                     nombre = nombre.substring(0, 1).toUpperCase() + nombre.substring(1);
-                    pokemonesDescargados.add(nombre);
+                    pokemones.add(nombre);
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
-                    pokemonesDescargados.add("Error con la pokedex o PC #" + i);
+                    pokemones.add("Error #" + i);
                 }
             }
             new Handler(Looper.getMainLooper()).post(() ->
             {
-                opcionesString.remove(opcionesString.size() - 1);
-                opcionesString.addAll(pokemonesDescargados);
-                adapter.notifyDataSetChanged();
+                if (tipoPregunta.equals("DROP") && contenedor instanceof Spinner)
+                {
+                    Spinner spinner = (Spinner) contenedor;
+                    List<String> opciones = new ArrayList<>();
+                    opciones.add(" Selecciona ");
+                    opciones.addAll(pokemones);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(spinner.getContext(), android.R.layout.simple_spinner_item, opciones);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinner.setAdapter(adapter);
+                }
+                else if (tipoPregunta.equals("SELECT") && contenedor instanceof RadioGroup)
+                {
+                    RadioGroup rg = (RadioGroup) contenedor;
+                    for (String p : pokemones)
+                    {
+                        RadioButton rb = new RadioButton(rg.getContext());
+                        rb.setText(p);
+                        rg.addView(rb);
+                    }
+                }
+                else if (tipoPregunta.equals("MULTIPLE") && contenedor instanceof LinearLayout)
+                {
+                    LinearLayout ll = (LinearLayout) contenedor;
+                    for (String p : pokemones)
+                    {
+                        CheckBox cb = new CheckBox(ll.getContext());
+                        cb.setText(p);
+                        ll.addView(cb);
+                        listaCheckboxes.add(cb);
+                    }
+                }
             });
         }).start();
+    }
+
+    private String generarEmojisJava(String textoOriginal)
+    {
+        if (textoOriginal == null) return "";
+        String texto = textoOriginal;
+        texto = texto.replaceAll("@\\[:\\)+\\]|@\\[:smile:\\]", "\uD83D\uDE00");
+        texto = texto.replaceAll("@\\[:\\(+\\]|@\\[:sad:\\]", "\uD83E\uDD72️");
+        texto = texto.replaceAll("@\\[:\\]+\\]|@\\[:serious:\\]", "\uD83D\uDE10");
+        texto = texto.replaceAll("@\\[<+3+\\]|@\\[:heart:\\]", "❤\uFE0F");
+        texto = texto.replaceAll("@\\[:\\^\\^:\\]|@\\[:cat:\\]", "\uD83D\uDE3A");
+        texto = texto.replaceAll("@\\[:star:\\]", "⭐");
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("@\\[:star[:-](\\d+):?\\]");
+        java.util.regex.Matcher matcher = pattern.matcher(texto);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find())
+        {
+            int cantidad = Integer.parseInt(matcher.group(1));
+            StringBuilder estrellas = new StringBuilder();
+            for (int i = 0; i < cantidad; i++) estrellas.append("⭐");
+            matcher.appendReplacement(sb, estrellas.toString());
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 }

@@ -35,4 +35,9 @@ public class Asignacion implements Instruccion
         ent.reasignarVariable(id, nuevoValor);
         return null;
     }
+
+    public String getId()
+    {
+        return this.id;
+    }
 }

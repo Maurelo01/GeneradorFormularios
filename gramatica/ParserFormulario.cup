@@ -143,6 +143,7 @@ terminal String LLAVE_DER;
 terminal String COMA;
 terminal String DOS_PUNTOS;
 terminal String COMODIN;
+terminal String PUNTO;
 
 /***** T SÍMBOLOS ESPECIALES PARA CICLOS *****/
 terminal String PUNTO_Y_COMA;
@@ -772,7 +773,7 @@ valor_enum ::=
 
 /***** FUNCIONES ESPECIALES *****/
 funcion_especial ::=
-    ID:id FUNC_DRAW PAR_IZQ lista_arreglo:args PAR_DER
+    ID:id PUNTO FUNC_DRAW PAR_IZQ lista_arreglo:args PAR_DER
     {:
         if (args.isEmpty()) 
         {

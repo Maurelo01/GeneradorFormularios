@@ -165,7 +165,7 @@ class FirstFragment : Fragment()
                 {
                     opciones.forEach { opt ->
                         val rb = RadioButton(requireContext())
-                        rb.text = opt
+                        rb.text = generarEmojis(opt)
                         rg.addView(rb)
                     }
                 }
@@ -202,7 +202,7 @@ class FirstFragment : Fragment()
                 {
                     opciones.forEach { opt ->
                         val cb = CheckBox(requireContext())
-                        cb.text = opt
+                        cb.text = generarEmojis(opt)
                         contenedorMultiple.addView(cb)
                         listaCheckboxes.add(cb)
                     }
@@ -242,6 +242,7 @@ class FirstFragment : Fragment()
                 }
                 else
                 {
+                    val opcionesGeneradas = opciones.map { generarEmojis(it) }
                     val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listOf(" Selecciona ") + opciones)
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinner.adapter = adapter
@@ -253,7 +254,7 @@ class FirstFragment : Fragment()
                     totalCalificables++
                     evaluadores.add{
                         val indiceSeleccionado = spinner.selectedItemPosition
-                        if (indiceSeleccionado == indexCorrecto) 1 else 0
+                        if (indiceSeleccionado -1 == indexCorrecto) 1 else 0
                     }
                 }
             }
@@ -287,7 +288,7 @@ class FirstFragment : Fragment()
     private fun agregarLabelPKM(parent: LinearLayout, text: String)
     {
         val tv = TextView(requireContext())
-        tv.text = text
+        tv.text = generarEmojis(text)
         tv.textSize = 16f
         tv.setTextColor(android.graphics.Color.parseColor("#333333"))
         tv.setPadding(0, 16, 0, 16)
@@ -397,6 +398,24 @@ class FirstFragment : Fragment()
         {
             editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#E5BE01")), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
+    }
+
+    private fun generarEmojis(textoOriginal: String): String
+    {
+        var texto = textoOriginal
+        texto = texto.replace(Regex("@\\[:\\)+\\]|@\\[:smile:\\]"), "\uD83D\uDE00")
+        texto = texto.replace(Regex("@\\[:\\(+\\]|@\\[:sad:\\]"), "\uD83E\uDD72")
+        texto = texto.replace(Regex("@\\[:\\]+\\]|@\\[:serious:\\]"), "\uD83D\uDE10")
+        texto = texto.replace(Regex("@\\[<+3+\\]|@\\[:heart:\\]"), "❤\uFE0F")
+        texto = texto.replace(Regex("@\\[:\\^\\^:\\]|@\\[:cat:\\]"), "\uD83D\uDE3A")
+        texto = texto.replace(Regex("@\\[:star:\\]"), "⭐")
+        val regexStar = Regex("@\\[:star[:-](\\d+):?\\]")
+        texto = regexStar.replace(texto)
+        { matchResult ->
+            val cantidad = matchResult.groupValues[1].toIntOrNull() ?: 1
+            "⭐".repeat(cantidad)
+        }
+        return texto
     }
 
     private fun procesarCompilacion(entradaCodigo: EditText, contenedorFormulario: LinearLayout, btnErrores: Button, btnExportarPKM: Button)
