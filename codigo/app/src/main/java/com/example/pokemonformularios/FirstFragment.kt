@@ -114,6 +114,8 @@ class FirstFragment : Fragment()
         val contenedorFormulario = view?.findViewById<LinearLayout>(R.id.contenedorFormulario) ?: return
         contenedorFormulario.removeAllViews()
         var seccionActual: LinearLayout? = null
+        var tablaActual: TableLayout? = null
+        var filaActual: TableRow? = null
         val lineas = codigoPKM.split("\n")
         val regexSeccion = Regex("<section=.*?>")
         val regexCierreSeccion = Regex("</section>")
@@ -122,6 +124,10 @@ class FirstFragment : Fragment()
         val regexSelect = Regex("""<select=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)",\s*\{(.*?)\},\s*(.+?)\s*/>""")
         val regexMultiple = Regex("""<multiple=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)",\s*\{(.*?)\},\s*(.+?)\s*/>""")
         val regexDrop = Regex("""<drop=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)",\s*\{(.*?)\},\s*(.+?)\s*/>""")
+        val regexTabla = Regex("<table=-?\\d+(\\.\\d+)?,\\s*-?\\d+(\\.\\d+)?>")
+        val regexCierreTabla = Regex("</table>")
+        val regexLinea = Regex("<line>")
+        val regexCierreLinea = Regex("</line>")
         val regexTexto = Regex("""<text=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)"\s*/>""")
         val evaluadores = mutableListOf<() -> Int>()
         var totalCalificables = 0
@@ -129,6 +135,26 @@ class FirstFragment : Fragment()
         {
             val l = linea.trim()
             if (l.isEmpty() || regexContent.matches(l) || l.startsWith("###") || l.contains(": ")) continue
+            val obtenerDestino: () -> LinearLayout =
+            {
+                if (filaActual != null)
+                {
+                    val celda = LinearLayout(requireContext())
+                    celda.orientation = LinearLayout.VERTICAL
+                    val border = android.graphics.drawable.GradientDrawable()
+                    border.setColor(android.graphics.Color.WHITE)
+                    border.setStroke(3, android.graphics.Color.BLACK)
+                    celda.background = border
+                    celda.setPadding(16, 16, 16, 16)
+                    val params = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
+                    params.setMargins(4, 4, 4, 4)
+                    celda.layoutParams = params
+                    filaActual!!.addView(celda)
+                    celda
+                } else {
+                    seccionActual ?: contenedorFormulario
+                }
+            }
             if (regexSeccion.matches(l))
             {
                 seccionActual = LinearLayout(requireContext())
@@ -142,24 +168,48 @@ class FirstFragment : Fragment()
             {
                 seccionActual = null
             }
+            else if (regexTabla.matches(l))
+            {
+                tablaActual = TableLayout(requireContext())
+                val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                params.setMargins(0, 16, 0, 16)
+                tablaActual!!.layoutParams = params
+                tablaActual!!.isStretchAllColumns = true
+                (seccionActual ?: contenedorFormulario).addView(tablaActual)
+            }
+            else if (regexCierreTabla.matches(l))
+            {
+                tablaActual = null
+            }
+            else if (regexLinea.matches(l))
+            {
+                filaActual = TableRow(requireContext())
+                tablaActual?.addView(filaActual)
+            }
+            else if (regexCierreLinea.matches(l))
+            {
+                filaActual = null
+            }
             else if (regexOpen.matches(l))
             {
                 val coincidencia = regexOpen.find(l)!!
                 val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
-                agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
+                val destino = obtenerDestino()
+                agregarLabelPKM(destino, labelLimpio)
                 val et = EditText(requireContext())
                 et.hint = "Tu respuesta..."
-                (seccionActual ?: contenedorFormulario).addView(et)
+                destino.addView(et)
             }
             else if (regexSelect.matches(l))
             {
                 val coincidencia = regexSelect.find(l)!!
                 val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
-                agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
+                val destino = obtenerDestino()
+                agregarLabelPKM(destino, labelLimpio)
                 val opciones = coincidencia.groupValues[4].split(",").map { it.replace("\"", "").trim() }
                 val correctaStr = coincidencia.groupValues[5].trim()
                 val rg = RadioGroup(requireContext())
-                (seccionActual ?: contenedorFormulario).addView(rg)
+                destino.addView(rg)
                 if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
                 {
                     cargarPokeApiLectura(rg, opciones[0], "SELECT")
@@ -192,14 +242,15 @@ class FirstFragment : Fragment()
             {
                 val coincidencia = regexMultiple.find(l)!!
                 val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
-                agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
+                val destino = obtenerDestino()
+                agregarLabelPKM(destino, labelLimpio)
                 val opciones = coincidencia.groupValues[4].split(",").map { it.replace("\"", "").trim() }
                 val correctaStr = coincidencia.groupValues[5].trim()
                 val listaCheckboxes = mutableListOf<CheckBox>()
-                val contenedorMultiple = seccionActual ?: contenedorFormulario
+                val contenedorMultiple = destino
                 if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
                 {
-                    cargarPokeApiLectura(contenedorMultiple, opciones[0], "MULTIPLE", listaCheckboxes)
+                    cargarPokeApiLectura(destino, opciones[0], "MULTIPLE", listaCheckboxes)
                 }
                 else
                 {
@@ -234,7 +285,8 @@ class FirstFragment : Fragment()
             {
                 val coincidencia = regexDrop.find(l)!!
                 val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
-                agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
+                val destino = obtenerDestino()
+                agregarLabelPKM(destino, labelLimpio)
                 val opciones = coincidencia.groupValues[4].split(",").map { it.replace("\"", "").trim() }
                 val correctaStr = coincidencia.groupValues[5].trim()
                 val spinner = Spinner(requireContext())
@@ -249,7 +301,7 @@ class FirstFragment : Fragment()
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinner.adapter = adapter
                 }
-                (seccionActual ?: contenedorFormulario).addView(spinner)
+                destino.addView(spinner)
                 val indexCorrecto = correctaStr.toDoubleOrNull()?.toInt() ?: -1
                 if (indexCorrecto != -1)
                 {
@@ -264,7 +316,8 @@ class FirstFragment : Fragment()
             {
                 val coincidencia = regexTexto.find(l)!!
                 val contenido = coincidencia.groupValues[3]
-                agregarLabelPKM(seccionActual ?: contenedorFormulario, contenido)
+                val destino = obtenerDestino()
+                agregarLabelPKM(destino, contenido)
             }
         }
         val btnEnviar = Button(requireContext())
