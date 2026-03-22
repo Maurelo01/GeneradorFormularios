@@ -560,7 +560,7 @@ atributo ::=
     {:
         RESULT = new Atributo("elements", le);
     :}
-    | ATTR_ELEMENTS DOS_PUNTOS CORCHETE_IZQ lista_arreglo:la CORCHETE_DER
+    | ATTR_ELEMENTS DOS_PUNTOS LLAVE_IZQ lista_arreglo:la LLAVE_DER
     {:
         RESULT = new Atributo("elements_table", la);
     :}
@@ -608,7 +608,7 @@ elemento_arreglo ::=
     {:
         RESULT = e;
     :}
-    | CORCHETE_IZQ lista_elementos:le CORCHETE_DER
+    | LLAVE_IZQ lista_elementos:le LLAVE_DER
     {:
         RESULT = le;
     :}
