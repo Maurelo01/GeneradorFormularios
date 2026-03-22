@@ -117,22 +117,25 @@ class FirstFragment : Fragment()
         val lineas = codigoPKM.split("\n")
         val regexSeccion = Regex("<section=.*?>")
         val regexCierreSeccion = Regex("</section>")
-        val regexOpen = Regex("<open=\\d+,\\s*\\d+,\\s*\"(.*?)\"/>")
-        val regexSelect = Regex("<select=\\d+,\\s*\\d+,\\s*\"(.*?)\",\\s*\\{(.*?)\\},\\s*(.+?)/>")
-        val regexMultiple = Regex("<multiple=\\d+,\\s*\\d+,\\s*\"(.*?)\",\\s*\\{(.*?)\\},\\s*(.+?)/>")
-        val regexDrop = Regex("<drop=\\d+,\\s*\\d+,\\s*\"(.*?)\",\\s*\\{(.*?)\\},\\s*(.+?)/>")
+        val regexContent = Regex("<content>|</content>")
+        val regexOpen = Regex("""<open=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)"\s*/>""")
+        val regexSelect = Regex("""<select=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)",\s*\{(.*?)\},\s*(.+?)\s*/>""")
+        val regexMultiple = Regex("""<multiple=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)",\s*\{(.*?)\},\s*(.+?)\s*/>""")
+        val regexDrop = Regex("""<drop=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)",\s*\{(.*?)\},\s*(.+?)\s*/>""")
+        val regexTexto = Regex("""<text=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)"\s*/>""")
         val evaluadores = mutableListOf<() -> Int>()
         var totalCalificables = 0
         for (linea in lineas)
         {
             val l = linea.trim()
+            if (l.isEmpty() || regexContent.matches(l) || l.startsWith("###") || l.contains(": ")) continue
             if (regexSeccion.matches(l))
             {
                 seccionActual = LinearLayout(requireContext())
-                seccionActual.orientation = LinearLayout.VERTICAL
+                seccionActual?.orientation = LinearLayout.VERTICAL
                 val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                 params.setMargins(0, 16, 0, 48)
-                seccionActual.layoutParams = params
+                seccionActual?.layoutParams = params
                 contenedorFormulario.addView(seccionActual)
             }
             else if (regexCierreSeccion.matches(l))
@@ -142,7 +145,7 @@ class FirstFragment : Fragment()
             else if (regexOpen.matches(l))
             {
                 val coincidencia = regexOpen.find(l)!!
-                val labelLimpio = coincidencia.groupValues[1].replace("\"", "")
+                val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
                 agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
                 val et = EditText(requireContext())
                 et.hint = "Tu respuesta..."
@@ -151,10 +154,10 @@ class FirstFragment : Fragment()
             else if (regexSelect.matches(l))
             {
                 val coincidencia = regexSelect.find(l)!!
-                val labelLimpio = coincidencia.groupValues[1].replace("\"", "")
+                val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
                 agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
-                val opciones = coincidencia.groupValues[2].split(",").map { it.replace("\"", "").trim() }
-                val correctaStr = coincidencia.groupValues[3].trim()
+                val opciones = coincidencia.groupValues[4].split(",").map { it.replace("\"", "").trim() }
+                val correctaStr = coincidencia.groupValues[5].trim()
                 val rg = RadioGroup(requireContext())
                 (seccionActual ?: contenedorFormulario).addView(rg)
                 if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
@@ -188,10 +191,10 @@ class FirstFragment : Fragment()
             else if (regexMultiple.matches(l))
             {
                 val coincidencia = regexMultiple.find(l)!!
-                val labelLimpio = coincidencia.groupValues[1].replace("\"", "")
+                val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
                 agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
-                val opciones = coincidencia.groupValues[2].split(",").map { it.replace("\"", "").trim() }
-                val correctaStr = coincidencia.groupValues[3].trim()
+                val opciones = coincidencia.groupValues[4].split(",").map { it.replace("\"", "").trim() }
+                val correctaStr = coincidencia.groupValues[5].trim()
                 val listaCheckboxes = mutableListOf<CheckBox>()
                 val contenedorMultiple = seccionActual ?: contenedorFormulario
                 if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
@@ -230,12 +233,11 @@ class FirstFragment : Fragment()
             else if (regexDrop.matches(l))
             {
                 val coincidencia = regexDrop.find(l)!!
-                val labelLimpio = coincidencia.groupValues[1].replace("\"", "")
+                val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
                 agregarLabelPKM(seccionActual ?: contenedorFormulario, labelLimpio)
-                val opciones = coincidencia.groupValues[2].split(",").map { it.replace("\"", "").trim() }
-                val correctaStr = coincidencia.groupValues[3].trim()
+                val opciones = coincidencia.groupValues[4].split(",").map { it.replace("\"", "").trim() }
+                val correctaStr = coincidencia.groupValues[5].trim()
                 val spinner = Spinner(requireContext())
-                (seccionActual ?: contenedorFormulario).addView(spinner)
                 if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
                 {
                     cargarPokeApiLectura(spinner, opciones[0], "DROP")
@@ -257,6 +259,12 @@ class FirstFragment : Fragment()
                         if (indiceSeleccionado -1 == indexCorrecto) 1 else 0
                     }
                 }
+            }
+            else if (regexTexto.matches(l))
+            {
+                val coincidencia = regexTexto.find(l)!!
+                val contenido = coincidencia.groupValues[3]
+                agregarLabelPKM(seccionActual ?: contenedorFormulario, contenido)
             }
         }
         val btnEnviar = Button(requireContext())

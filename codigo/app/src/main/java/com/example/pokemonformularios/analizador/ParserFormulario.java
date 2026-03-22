@@ -2465,7 +2465,12 @@ class CUP$ParserFormulario$actions {
 		int cright = ((Symbol)CUP$ParserFormulario$stack.peek()).right;
 		String c = (String)((Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new Valor(c, "string");
+        String texto = c.toString();
+        if (texto.startsWith("\"") && texto.endsWith("\""))
+        {
+            texto = texto.substring(1, texto.length() - 1);
+        }
+        RESULT = new Valor(texto, "string");
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("expresion",22, ((Symbol)CUP$ParserFormulario$stack.peek()), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
