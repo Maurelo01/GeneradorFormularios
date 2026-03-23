@@ -1,7 +1,11 @@
 package com.example.pokemonformularios.ast;
+
 import java.util.List;
 import java.util.ArrayList;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -11,6 +15,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
+import androidx.core.graphics.ColorUtils;
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -26,6 +31,7 @@ public class ComponentePregunta implements Instruccion
     private Object respuestaCorrecta = null;
     private View vistaEntrada = null;
     private List<CheckBox> listaCheckboxes = new ArrayList<>();
+
     public ComponentePregunta(String tipoPregunta, List<Atributo> atributos)
     {
         this.tipoPregunta = tipoPregunta;
@@ -38,6 +44,9 @@ public class ComponentePregunta implements Instruccion
     {
         String label = "Pregunta sin título";
         List<Object> opciones = new ArrayList<>();
+        List<Atributo> listaEstilos = null;
+        String width = "-1";
+        String height = "-1";
         if (atributos != null)
         {
             for (Atributo attr : atributos)
@@ -72,18 +81,34 @@ public class ComponentePregunta implements Instruccion
                     }
                     respuestaCorrecta = correctasEvaluadas;
                 }
+                else if (attr.getNombre().equals("styles"))
+                {
+                    listaEstilos = (List<Atributo>) attr.getValor();
+                }
+                else if (attr.getNombre().equals("width"))
+                {
+                    Object w = ((Expresion) attr.getValor()).evaluar(ent);
+                    if (w != null) width = w.toString();
+                }
+                else if (attr.getNombre().equals("height"))
+                {
+                    Object h = ((Expresion) attr.getValor()).evaluar(ent);
+                    if (h != null) height = h.toString();
+                }
             }
         }
+        LinearLayout layoutPregunta = null;
+        TextView tvLabel = null;
         if (ent.getContexto() != null && ent.getLayoutActual() != null)
         {
-            LinearLayout layoutPregunta = new LinearLayout(ent.getContexto());
+            layoutPregunta = new LinearLayout(ent.getContexto());
             layoutPregunta.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             params.setMargins(0, 16, 0, 48);
             layoutPregunta.setLayoutParams(params);
-            TextView tvLabel = new TextView(ent.getContexto());
+            tvLabel = new TextView(ent.getContexto());
             tvLabel.setText(generarEmojisJava(label));
-            tvLabel.setTextSize(16f);
+            tvLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
             tvLabel.setTextColor(Color.parseColor("#333333"));
             tvLabel.setPadding(0, 0, 0, 16);
             layoutPregunta.addView(tvLabel);
@@ -112,12 +137,15 @@ public class ComponentePregunta implements Instruccion
             switch (tipoPregunta)
             {
                 case "OPEN":
+                {
                     EditText editText = new EditText(ent.getContexto());
                     editText.setHint("Tu respuesta...");
                     layoutPregunta.addView(editText);
                     this.vistaEntrada = editText;
                     break;
+                }
                 case "SELECT":
+                {
                     RadioGroup radioGroup = new RadioGroup(ent.getContexto());
                     if (requiereApi)
                     {
@@ -135,7 +163,9 @@ public class ComponentePregunta implements Instruccion
                     layoutPregunta.addView(radioGroup);
                     this.vistaEntrada = radioGroup;
                     break;
+                }
                 case "MULTIPLE":
+                {
                     if (requiereApi)
                     {
                         cargarPokemon(pokeInicio, pokeFin, layoutPregunta, "MULTIPLE");
@@ -151,7 +181,9 @@ public class ComponentePregunta implements Instruccion
                         }
                     }
                     break;
+                }
                 case "DROP":
+                {
                     Spinner spinner = new Spinner(ent.getContexto());
                     if (requiereApi)
                     {
@@ -174,6 +206,83 @@ public class ComponentePregunta implements Instruccion
                     layoutPregunta.addView(spinner);
                     this.vistaEntrada = spinner;
                     break;
+                }
+            }
+            boolean tieneEstilos = listaEstilos != null && !listaEstilos.isEmpty();
+            if (tieneEstilos)
+            {
+                GradientDrawable fondoYBorde = new GradientDrawable();
+                fondoYBorde.setCornerRadius(16f);
+                boolean aplicarFondoYBorde = false;
+                for (Atributo estilo : listaEstilos)
+                {
+                    String nombreEstilo = estilo.getNombre().replace("\"", "");
+                    Object valorEstiloObj = estilo.getValor();
+                    String valorStr = valorEstiloObj != null ? valorEstiloObj.toString() : "";
+                    if (layoutPregunta != null && tvLabel != null)
+                    {
+                        try
+                        {
+                            switch (nombreEstilo)
+                            {
+                                case "color":
+                                {
+                                    tvLabel.setTextColor(parsearColores(valorStr));
+                                    break;
+                                }
+                                case "background color":
+                                {
+                                    fondoYBorde.setColor(parsearColores(valorStr));
+                                    aplicarFondoYBorde = true;
+                                    break;
+                                }
+                                case "font family":
+                                {
+                                    if (valorStr.contains("MONO")) tvLabel.setTypeface(Typeface.MONOSPACE);
+                                    else if (valorStr.contains("SANS_SERIF")) tvLabel.setTypeface(Typeface.SANS_SERIF);
+                                    else if (valorStr.contains("CURSIVE")) tvLabel.setTypeface(Typeface.create("cursive", Typeface.NORMAL));
+                                    break;
+                                }
+                                case "text size":
+                                {
+                                    tvLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, Float.parseFloat(valorStr));
+                                    break;
+                                }
+                                case "border":
+                                {
+                                    String limpio = valorStr.replace("(", "").replace(")", "").replace(" ", "");
+                                    String[] partes = limpio.split(",");
+                                    if (partes.length == 3)
+                                    {
+                                        int grosor = Float.valueOf(partes[0]).intValue();
+                                        String tipo = partes[1];
+                                        int colorBorde = parsearColores(partes[2]);
+
+                                        if (tipo.equals("DOTTED"))
+                                        {
+                                            fondoYBorde.setStroke(grosor, colorBorde, 15f, 10f);
+                                        }
+                                        else
+                                        {
+                                            fondoYBorde.setStroke(grosor, colorBorde);
+                                        }
+                                        aplicarFondoYBorde = true;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            System.err.println("Error aplicando estilo a PREGUNTA: " + e.getMessage());
+                        }
+                    }
+                }
+                if (layoutPregunta != null && aplicarFondoYBorde)
+                {
+                    layoutPregunta.setBackground(fondoYBorde);
+                    layoutPregunta.setPadding(32, 32, 32, 32);
+                }
             }
             ent.getLayoutActual().addView(layoutPregunta);
             ent.registrarPregunta(this);
@@ -199,18 +308,27 @@ public class ComponentePregunta implements Instruccion
         switch (tipoPregunta)
         {
             case "OPEN":
-                ent.getPkmBuilder().append("<open=-1, -1, \"").append(label).append("\"/>\n");
+            {
+                ent.getPkmBuilder().append("<open=").append(width).append(", ").append(height).append(", \"").append(label).append("\"/>\n");
                 break;
+            }
             case "SELECT":
-                ent.getPkmBuilder().append("<select=-1, -1, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
+            {
+                ent.getPkmBuilder().append("<select=").append(width).append(", ").append(height).append(", \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
                 break;
+            }
             case "MULTIPLE":
-                ent.getPkmBuilder().append("<multiple=-1, -1, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
+            {
+                ent.getPkmBuilder().append("<multiple=").append(width).append(", ").append(height).append(", \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
                 break;
+            }
             case "DROP":
-                ent.getPkmBuilder().append("<drop=-1, -1, \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
+            {
+                ent.getPkmBuilder().append("<drop=").append(width).append(", ").append(height).append(", \"").append(label).append("\", ").append(strOptions).append(", ").append(strCorrect).append("/>\n");
                 break;
+            }
         }
+
         return null;
     }
 
@@ -236,7 +354,7 @@ public class ComponentePregunta implements Instruccion
                 Spinner sp = (Spinner) vistaEntrada;
                 int indiceSeleccionado = sp.getSelectedItemPosition();
                 int indiceCorrecto = Double.valueOf(respuestaCorrecta.toString()).intValue();
-                if (indiceSeleccionado -1 == indiceCorrecto) return 1;
+                if (indiceSeleccionado - 1 == indiceCorrecto) return 1;
             }
             else if (tipoPregunta.equals("MULTIPLE"))
             {
@@ -336,6 +454,46 @@ public class ComponentePregunta implements Instruccion
                 }
             });
         }).start();
+    }
+
+    private int parsearColores(String colorOriginal)
+    {
+        String c = colorOriginal.trim().replace("\"", "").toUpperCase();
+        switch (c)
+        {
+            case "RED": return Color.parseColor("#F80000");
+            case "BLUE": return Color.parseColor("#3F48F4");
+            case "GREEN": return Color.parseColor("#C6DA52");
+            case "YELLOW": return Color.parseColor("#FFFF00");
+            case "PURPLE": return Color.parseColor("#8800FF");
+            case "SKY": return Color.parseColor("#DDF4F5");
+            case "BLACK": return Color.parseColor("#000000");
+            case "WHITE": return Color.parseColor("#FFFFFF");
+        }
+        try
+        {
+            if (c.startsWith("(") && c.endsWith(")"))
+            {
+                String[] rgb = c.replace("(", "").replace(")", "").split(",");
+                return Color.rgb(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()));
+            }
+            else if (c.startsWith("<") && c.endsWith(">"))
+            {
+                String[] hsl = c.replace("<", "").replace(">", "").split(",");
+                float h = Float.parseFloat(hsl[0].trim());
+                float s = Float.parseFloat(hsl[1].trim()) / 100f;
+                float l = Float.parseFloat(hsl[2].trim()) / 100f;
+                return ColorUtils.HSLToColor(new float[]{h, s, l});
+            }
+            else
+            {
+                return Color.parseColor(c);
+            }
+        }
+        catch (Exception e)
+        {
+            return Color.BLACK;
+        }
     }
 
     private String generarEmojisJava(String textoOriginal)

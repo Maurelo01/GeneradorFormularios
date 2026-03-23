@@ -642,9 +642,15 @@ estilo ::=
     {:
         RESULT = new Atributo(c.toString(), e);
     :}
-    | CADENA:c DOS_PUNTOS PAR_IZQ expresion:num COMA valor_enum:tipo COMA valor_color:vc PAR_DER
+    | CADENA:c DOS_PUNTOS PAR_IZQ ENTERO:num COMA valor_enum:tipo COMA valor_color:vc PAR_DER
     {:
-        RESULT = new Atributo("border", "borde_complejo");
+        String valorBorde = "(" + num + ", " + tipo + ", " + vc + ")";
+        RESULT = new Atributo(c.toString(), valorBorde);
+    :}
+    | CADENA:c DOS_PUNTOS PAR_IZQ DECIMAL:num COMA valor_enum:tipo COMA valor_color:vc PAR_DER
+    {:
+        String valorBorde = "(" + num + ", " + tipo + ", " + vc + ")";
+        RESULT = new Atributo(c.toString(), valorBorde);
     :}
     ;
 
@@ -751,29 +757,86 @@ expresion ::=
 
 /***** VALORES DE COLORES *****/
 valor_color ::=
-    VAL_COLOR_HEX
-    | VAL_COLOR_RGB
-    | VAL_COLOR_HSL
+    VAL_COLOR_HEX:v
+    {:
+        RESULT = v;
+    :}
+    | VAL_COLOR_RGB:v
+    {:
+        RESULT = v;
+    :}
+    | VAL_COLOR_HSL:v
+    {:
+        RESULT = v;
+    :}
     | COLOR_RED
+    {:
+        RESULT = "RED";
+    :}
     | COLOR_BLUE
+    {:
+        RESULT = "BLUE";
+    :}
     | COLOR_GREEN
+    {:
+        RESULT = "GREEN";
+    :}
     | COLOR_PURPLE
+    {:
+        RESULT = "PURPLE";
+    :}
     | COLOR_SKY
+    {:
+        RESULT = "SKY";
+    :}
     | COLOR_YELLOW
+    {:
+        RESULT = "YELLOW";
+    :}
     | COLOR_BLACK
+    {:
+        RESULT = "BLACK";
+    :}
     | COLOR_WHITE
+    {:
+        RESULT = "WHITE";
+    :}
     ;
 
 /***** VALORES DE ENUMS *****/
 valor_enum ::=
     ENUM_VERTICAL
+    {:
+        RESULT = "VERTICAL";
+    :}
     | ENUM_HORIZONTAL
+    {:
+        RESULT = "HORIZONTAL";
+    :}
     | ENUM_MONO
+    {:
+        RESULT = "MONO";
+    :}
     | ENUM_SANS_SERIF
+    {:
+        RESULT = "SANS_SERIF";
+    :}
     | ENUM_CURSIVE
+    {:
+        RESULT = "CURSIVE";
+    :}
     | ENUM_LINE
+    {:
+        RESULT = "LINE";
+    :}
     | ENUM_DOTTED
+    {:
+        RESULT = "DOTTED";
+    :}
     | ENUM_DOUBLE
+    {:
+        RESULT = "DOUBLE";
+    :}
     ;
 
 /***** FUNCIONES ESPECIALES *****/
