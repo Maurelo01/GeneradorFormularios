@@ -84,16 +84,7 @@ class FirstFragment : Fragment()
         }
 
         btnColor.setOnClickListener{
-            val cursor = entradaCodigo.selectionStart
-            val textoAInsertar = "\"#5A438F\""
-            if (cursor >= 0)
-            {
-                entradaCodigo.text.insert(cursor, textoAInsertar)
-            }
-            else
-            {
-                entradaCodigo.append(textoAInsertar)
-            }
+            mostrarSelectorDeColor(entradaCodigo)
         }
 
         btnCargarPKM.setOnClickListener{
@@ -151,7 +142,9 @@ class FirstFragment : Fragment()
                     celda.layoutParams = params
                     filaActual!!.addView(celda)
                     celda
-                } else {
+                }
+                else
+                {
                     seccionActual ?: contenedorFormulario
                 }
             }
@@ -216,7 +209,7 @@ class FirstFragment : Fragment()
                 }
                 else
                 {
-                    opciones.forEach { opt ->
+                    opciones.forEach{ opt ->
                         val rb = RadioButton(requireContext())
                         rb.text = generarEmojis(opt)
                         rg.addView(rb)
@@ -327,7 +320,7 @@ class FirstFragment : Fragment()
         val paramsBtn = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
         paramsBtn.setMargins(0, 32, 0, 32)
         btnEnviar.layoutParams = paramsBtn
-        btnEnviar.setOnClickListener {
+        btnEnviar.setOnClickListener{
             var totalPuntos = 0
             for (evaluador in evaluadores)
             {
@@ -429,36 +422,22 @@ class FirstFragment : Fragment()
         {
             editable.removeSpan(span)
         }
-        val patronComentarios = java.util.regex.Pattern.compile("(\\$.*)|(/\\*[\\s\\S]*?\\*/)")
-        var matcher = patronComentarios.matcher(texto)
-        while (matcher.find())
+        fun aplicarColor(regex: String, colorHex: String)
         {
-            editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#808080")), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            val patron = java.util.regex.Pattern.compile(regex)
+            val matcher = patron.matcher(texto)
+            while (matcher.find())
+            {
+                editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor(colorHex)), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
         }
-        val patronReservadas = java.util.regex.Pattern.compile("\\b(SECTION|TABLE|TEXT|OPEN_QUESTION|IF|ELSE|WHILE|FOR|number|string)\\b")
-        matcher = patronReservadas.matcher(texto)
-        while (matcher.find())
-        {
-            editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#000080")), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        val patronAtributos = java.util.regex.Pattern.compile("\\b(content|width|height|elements|label)\\b\\s*:")
-        matcher = patronAtributos.matcher(texto)
-        while (matcher.find())
-        {
-            editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#F27C07")), matcher.start(), matcher.end() - 1, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        val patronCadenas = java.util.regex.Pattern.compile("\"[^\"\\n]*\"")
-        matcher = patronCadenas.matcher(texto)
-        while (matcher.find())
-        {
-            editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#00913F")), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        val patronNumeros = java.util.regex.Pattern.compile("\\b\\d+(\\.\\d+)?\\b")
-        matcher = patronNumeros.matcher(texto)
-        while (matcher.find())
-        {
-            editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#E5BE01")), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
+        aplicarColor("(\\$.*)|(/\\*[\\s\\S]*?\\*/)", "#808080")
+        aplicarColor("[+\\-*/^%]", "#88DC65")
+        aplicarColor("\"[^\"]*\"", "#FF8000")
+        aplicarColor("\\b\\d+(\\.\\d+)?\\b", "#A3D5EB")
+        aplicarColor("\\b(SECTION|TABLE|TEXT|OPEN_QUESTION|DROP_QUESTION|SELECT_QUESTION|MULTIPLE_QUESTION|IF|ELSE|WHILE|DO|FOR|in|number|string|special)\\b", "#8800FF")
+        aplicarColor("[{}\\[\\]()]", "#0000FF")
+        aplicarColor("@\\[.*?\\]", "#FFDE21")
     }
 
     private fun generarEmojis(textoOriginal: String): String
@@ -679,5 +658,89 @@ class FirstFragment : Fragment()
             val descripcion = inputDesc.text.toString().ifBlank{ "Sin descripción" }
             guardarArchivoPKM(entorno, nombreDefinitivo, autor, descripcion)
         }.setNegativeButton("Cancelar", null).show()
+    }
+
+    private fun mostrarSelectorDeColor(entradaCodigo: EditText)
+    {
+        val colores = arrayOf(
+            "#F80000", "#C6DA52", "#3F48F4", "#FFFF00",
+            "#8800FF", "#FFA500", "#DDF4F5", "#CF3476",
+            "#000000", "#FFFFFF", "#808080", "#FFB5C0"
+        )
+        val nombresBase = mapOf(
+            "#F80000" to "RED", "#C6DA52" to "GREEN", "#3F48F4" to "BLUE", "#FFFF00" to "YELLOW",
+            "#8800FF" to "PURPLE", "#DDF4F5" to "SKY", "#000000" to "BLACK", "#FFFFFF" to "WHITE"
+        )
+        val contenedor = LinearLayout(requireContext()).apply{
+            orientation = LinearLayout.VERTICAL
+            setPadding(32, 32, 32, 32)
+            gravity = android.view.Gravity.CENTER
+        }
+        val gridLayout = GridLayout(requireContext()).apply{
+            columnCount = 4
+            rowCount = 3
+        }
+        val dialog = AlertDialog.Builder(requireContext()).setTitle("Elige un Color").setView(contenedor).setNegativeButton("Cancelar", null).create()
+        for (colorHex in colores)
+        {
+            val colorView = View(requireContext()).apply{
+                val size = 130
+                val params = GridLayout.LayoutParams().apply{
+                    width = size
+                    height = size
+                    setMargins(16, 16, 16, 16)
+                }
+                layoutParams = params
+                val border = android.graphics.drawable.GradientDrawable()
+                val hexLimpio = colorHex.trim()
+                var colorInt = android.graphics.Color.GRAY
+                try
+                {
+                    colorInt = android.graphics.Color.parseColor(hexLimpio)
+                    border.setColor(colorInt)
+                }
+                catch (e: Exception)
+                {
+                    border.setColor(colorInt)
+                }
+                border.setStroke(3, android.graphics.Color.DKGRAY)
+                border.cornerRadius = 24f
+                background = border
+                setOnClickListener{
+                    val r = android.graphics.Color.red(colorInt)
+                    val g = android.graphics.Color.green(colorInt)
+                    val b = android.graphics.Color.blue(colorInt)
+                    val hsl = FloatArray(3)
+                    androidx.core.graphics.ColorUtils.colorToHSL(colorInt, hsl)
+                    val h = hsl[0].toInt()
+                    val s = (hsl[1] * 100).toInt()
+                    val l = (hsl[2] * 100).toInt()
+                    val opcionesList = mutableListOf("Hexadecimal: $hexLimpio", "RGB: ($r,$g,$b)", "HSL: <$h,$s,$l>")
+                    if (nombresBase.containsKey(hexLimpio))
+                    {
+                        opcionesList.add("Predefinido: ${nombresBase[hexLimpio]}")
+                    }
+                    AlertDialog.Builder(requireContext())
+                        .setTitle("¿En qué formato deseas insertarlo?").setItems(opcionesList.toTypedArray())
+                        { _, which ->
+                            val formatoElegido = opcionesList[which]
+                            val valorAInsertar = formatoElegido.split(": ")[1]
+                            val cursor = entradaCodigo.selectionStart
+                            if (cursor >= 0)
+                            {
+                                entradaCodigo.text.insert(cursor, valorAInsertar)
+                            }
+                            else
+                            {
+                                entradaCodigo.append(valorAInsertar)
+                            }
+                            dialog.dismiss()
+                        }.show()
+                }
+            }
+            gridLayout.addView(colorView)
+        }
+        contenedor.addView(gridLayout)
+        dialog.show()
     }
 }
