@@ -25,8 +25,6 @@ public class Valor implements Expresion
                 return "???";
             }
         }
-
-        // Si es un número o texto normal, retorna su valor tal cual
         return this.valor;
     }
     public String getTipo()

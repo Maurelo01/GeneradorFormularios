@@ -1,5 +1,7 @@
 package com.example.pokemonformularios.ast;
 
+import com.example.pokemonformularios.reportes.ErrorCompi;
+
 public class OperacionLogica implements Expresion
 {
     private Expresion izq;
@@ -23,7 +25,29 @@ public class OperacionLogica implements Expresion
     @Override
     public Object evaluar(Entorno ent)
     {
-        if (operador.equals("!"))
+        if (izq instanceof OperacionLogica)
+        {
+            String opIzq = ((OperacionLogica) izq).getOperador();
+            if (!opIzq.equals("!") && !opIzq.equals("~") && !this.operador.equals(opIzq))
+            {
+                String mensaje = "No se pueden combinar diferentes operadores lógicos (&& y ||) en la misma expresión.";
+                System.err.println("Error Semántico: " + mensaje);
+                ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, 0, 0));
+                return 0.0;
+            }
+        }
+        if (der instanceof OperacionLogica)
+        {
+            String opDer = ((OperacionLogica) der).getOperador();
+            if (!opDer.equals("!") && !opDer.equals("~") && !this.operador.equals(opDer))
+            {
+                String mensaje = "No se pueden combinar diferentes operadores lógicos (&& y ||) en la misma expresión.";
+                System.err.println("Error Semántico: " + mensaje);
+                ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, 0, 0));
+                return 0.0;
+            }
+        }
+        if (operador.equals("!") || operador.equals("~"))
         {
             Object valDer = der.evaluar(ent);
             if (valDer instanceof Double)
@@ -44,7 +68,14 @@ public class OperacionLogica implements Expresion
                 case "||": return (boolIzq || boolDer) ? 1.0 : 0.0;
             }
         }
-        System.err.println("Error Semántico: Los operadores lógicos requieren números u operaciones relacionales.");
+        String mensaje = "Los operadores lógicos requieren números u operaciones relacionales.";
+        System.err.println("Error Semántico: " + mensaje);
+        ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, 0, 0));
         return 0.0;
+    }
+
+    public String getOperador()
+    {
+        return this.operador;
     }
 }

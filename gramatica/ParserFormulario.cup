@@ -201,18 +201,10 @@ non terminal Instruccion funcion_especial;
 
 /***** PRECEDENCIA DE OPERADORES *****/
 // De menor a mayor precedencia
-precedence left OR;
-precedence left AND;
-precedence left IGUALDAD;
-precedence left DIFERENTE;
-precedence left MENOR;
-precedence left MAYOR;
-precedence left MENOR_IGUAL;
-precedence left MAYOR_IGUAL;
-precedence left MAS;
-precedence left MENOS;
-precedence left POR;
-precedence left DIV;
+precedence left OR, AND;
+precedence left IGUALDAD, DIFERENTE, MENOR, MAYOR, MENOR_IGUAL, MAYOR_IGUAL;
+precedence left MAS, MENOS;
+precedence left POR, DIV;
 precedence left MODULO;
 precedence right POTENCIA;
 precedence right NOT;
@@ -714,7 +706,7 @@ expresion ::=
     :}
     | NOT expresion:e
     {:
-        RESULT = new OperacionLogica("!", e);
+        RESULT = new OperacionLogica("~", e);
     :}
     | MENOS expresion:e
     {:

@@ -216,19 +216,19 @@ public class ParserFormulario extends java_cup.runtime.lr_parser {
     "\005\uffa3\006\uffa3\007\uffa3\010\uffa3\011\uffa3\012\uffa3\013" +
     "\uffa3\014\uffa3\015\uffa3\016\uffa3\020\uffa3\021\uffa3\022\uffa3" +
     "\063\076\064\072\065\075\066\100\067\071\070\101\071" +
-    "\uffa3\072\uffa3\073\uffa3\074\uffa3\075\074\076\uffa3\077\uffa3" +
+    "\uffa3\072\uffa3\073\uffa3\074\uffa3\075\uffa3\076\uffa3\077\uffa3" +
     "\100\uffa3\104\uffa3\106\uffa3\110\uffa3\111\uffa3\115\uffa3\117" +
     "\uffa3\121\uffa3\001\002\000\112\002\uff9f\004\uff9f\005\uff9f" +
     "\006\uff9f\007\uff9f\010\uff9f\011\uff9f\012\uff9f\013\uff9f\014" +
     "\uff9f\015\uff9f\016\uff9f\020\uff9f\021\uff9f\022\uff9f\063\076" +
     "\064\072\065\075\066\100\067\071\070\101\071\070\072" +
-    "\102\073\077\074\073\075\074\076\104\077\067\100\uff9f" +
+    "\102\073\077\074\073\075\074\076\104\077\uff9f\100\uff9f" +
     "\104\uff9f\106\uff9f\110\uff9f\111\uff9f\115\uff9f\117\uff9f\121" +
     "\uff9f\001\002\000\112\002\uffa1\004\uffa1\005\uffa1\006\uffa1" +
     "\007\uffa1\010\uffa1\011\uffa1\012\uffa1\013\uffa1\014\uffa1\015" +
     "\uffa1\016\uffa1\020\uffa1\021\uffa1\022\uffa1\063\076\064\072" +
     "\065\075\066\100\067\071\070\101\071\uffa1\072\uffa1\073" +
-    "\077\074\073\075\074\076\104\077\uffa1\100\uffa1\104\uffa1" +
+    "\uffa1\074\uffa1\075\uffa1\076\uffa1\077\uffa1\100\uffa1\104\uffa1" +
     "\106\uffa1\110\uffa1\111\uffa1\115\uffa1\117\uffa1\121\uffa1\001" +
     "\002\000\112\002\uffa7\004\uffa7\005\uffa7\006\uffa7\007\uffa7" +
     "\010\uffa7\011\uffa7\012\uffa7\013\uffa7\014\uffa7\015\uffa7\016" +
@@ -245,18 +245,18 @@ public class ParserFormulario extends java_cup.runtime.lr_parser {
     "\uffa6\004\uffa6\005\uffa6\006\uffa6\007\uffa6\010\uffa6\011\uffa6" +
     "\012\uffa6\013\uffa6\014\uffa6\015\uffa6\016\uffa6\020\uffa6\021" +
     "\uffa6\022\uffa6\063\076\064\072\065\075\066\100\067\071" +
-    "\070\101\071\uffa6\072\uffa6\073\uffa6\074\uffa6\075\074\076" +
-    "\104\077\uffa6\100\uffa6\104\uffa6\106\uffa6\110\uffa6\111\uffa6" +
+    "\070\101\071\uffa6\072\uffa6\073\uffa6\074\uffa6\075\uffa6\076" +
+    "\uffa6\077\uffa6\100\uffa6\104\uffa6\106\uffa6\110\uffa6\111\uffa6" +
     "\115\uffa6\117\uffa6\121\uffa6\001\002\000\112\002\uffac\004" +
     "\uffac\005\uffac\006\uffac\007\uffac\010\uffac\011\uffac\012\uffac" +
     "\013\uffac\014\uffac\015\uffac\016\uffac\020\uffac\021\uffac\022" +
-    "\uffac\063\uffac\064\072\065\075\066\100\067\071\070\101" +
+    "\uffac\063\uffac\064\uffac\065\075\066\100\067\071\070\101" +
     "\071\uffac\072\uffac\073\uffac\074\uffac\075\uffac\076\uffac\077" +
     "\uffac\100\uffac\104\uffac\106\uffac\110\uffac\111\uffac\115\uffac" +
     "\117\uffac\121\uffac\001\002\000\112\002\uffaa\004\uffaa\005" +
     "\uffaa\006\uffaa\007\uffaa\010\uffaa\011\uffaa\012\uffaa\013\uffaa" +
     "\014\uffaa\015\uffaa\016\uffaa\020\uffaa\021\uffaa\022\uffaa\063" +
-    "\uffaa\064\uffaa\065\uffaa\066\100\067\071\070\101\071\uffaa" +
+    "\uffaa\064\uffaa\065\uffaa\066\uffaa\067\071\070\101\071\uffaa" +
     "\072\uffaa\073\uffaa\074\uffaa\075\uffaa\076\uffaa\077\uffaa\100" +
     "\uffaa\104\uffaa\106\uffaa\110\uffaa\111\uffaa\115\uffaa\117\uffaa" +
     "\121\uffaa\001\002\000\112\002\uffa4\004\uffa4\005\uffa4\006" +
@@ -268,8 +268,8 @@ public class ParserFormulario extends java_cup.runtime.lr_parser {
     "\001\002\000\112\002\uffa5\004\uffa5\005\uffa5\006\uffa5\007" +
     "\uffa5\010\uffa5\011\uffa5\012\uffa5\013\uffa5\014\uffa5\015\uffa5" +
     "\016\uffa5\020\uffa5\021\uffa5\022\uffa5\063\076\064\072\065" +
-    "\075\066\100\067\071\070\101\071\uffa5\072\uffa5\073\077" +
-    "\074\uffa5\075\074\076\104\077\uffa5\100\uffa5\104\uffa5\106" +
+    "\075\066\100\067\071\070\101\071\uffa5\072\uffa5\073\uffa5" +
+    "\074\uffa5\075\uffa5\076\uffa5\077\uffa5\100\uffa5\104\uffa5\106" +
     "\uffa5\110\uffa5\111\uffa5\115\uffa5\117\uffa5\121\uffa5\001\002" +
     "\000\112\002\uffab\004\uffab\005\uffab\006\uffab\007\uffab\010" +
     "\uffab\011\uffab\012\uffab\013\uffab\014\uffab\015\uffab\016\uffab" +
@@ -286,7 +286,7 @@ public class ParserFormulario extends java_cup.runtime.lr_parser {
     "\004\uffa2\005\uffa2\006\uffa2\007\uffa2\010\uffa2\011\uffa2\012" +
     "\uffa2\013\uffa2\014\uffa2\015\uffa2\016\uffa2\020\uffa2\021\uffa2" +
     "\022\uffa2\063\076\064\072\065\075\066\100\067\071\070" +
-    "\101\071\uffa2\072\102\073\077\074\073\075\074\076\104" +
+    "\101\071\uffa2\072\uffa2\073\uffa2\074\uffa2\075\uffa2\076\uffa2" +
     "\077\uffa2\100\uffa2\104\uffa2\106\uffa2\110\uffa2\111\uffa2\115" +
     "\uffa2\117\uffa2\121\uffa2\001\002\000\112\002\uffa0\004\uffa0" +
     "\005\uffa0\006\uffa0\007\uffa0\010\uffa0\011\uffa0\012\uffa0\013" +
@@ -2425,7 +2425,7 @@ class CUP$ParserFormulario$actions {
 		int eright = ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()).right;
 		Expresion e = (Expresion)((java_cup.runtime.Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new OperacionLogica("!", e);
+        RESULT = new OperacionLogica("~", e);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("expresion",22, ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)), ((java_cup.runtime.Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
