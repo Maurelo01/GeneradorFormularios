@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#a82028"
     tools:context=".FirstFragment">
 
     <LinearLayout
@@ -24,6 +25,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Editor PKM_FORMS:"
+                android:textColor="#f0f0f8"
                 android:textStyle="bold" />
 
             <Button
@@ -32,9 +34,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
-                android:backgroundTint="#3F51B5"
+                android:backgroundTint="#f0f0f8"
                 android:text="Plantilla"
-                android:textSize="12sp" />
+                android:textColor="#8F9DAB"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btnColor"
@@ -42,9 +46,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
-                android:backgroundTint="#3F51B5"
+                android:backgroundTint="#f0f0f8"
                 android:text="Color"
-                android:textSize="12sp" />
+                android:textColor="#8F9DAB"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
@@ -58,30 +64,33 @@
                 android:layout_width="128dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:backgroundTint="#FFC107"
+                android:backgroundTint="#ffde00"
                 android:text="Ir a Contestar"
-                android:textColor="#100F0F"
-                android:textSize="12sp" />
+                android:textColor="#615712"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btnExportarPKM"
                 android:layout_width="128dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:backgroundTint="#FFC107"
+                android:backgroundTint="#ffde00"
                 android:text="Guardar como .pkm"
-                android:textColor="#100F0F"
-                android:textSize="12sp" />
+                android:textColor="#615712"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btnCargarArchivo"
                 android:layout_width="130dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:backgroundTint="#FFC107"
+                android:backgroundTint="#ffde00"
                 android:text="Cargar Archivo"
-                android:textColor="@color/black"
-                android:textSize="12sp" />
+                android:textColor="#615712"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
@@ -89,7 +98,7 @@
             android:id="@+id/entradaCodigo"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:background="#9C9C9C"
+            android:background="#a8b8c8"
             android:ems="10"
             android:gravity="start|top"
             android:hint="Escribe tu código SECTION..."
@@ -105,23 +114,27 @@
                 android:id="@+id/btnCompilar"
                 android:layout_width="198dp"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#4CAF50"
-                android:text="Generar Formulario" />
+                android:backgroundTint="#70b8f0"
+                android:text="Generar Formulario"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btnErrores"
                 android:layout_width="7dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:backgroundTint="#E91E63"
-                android:text="Ver Errores" />
+                android:backgroundTint="#c85048"
+                android:text="Ver Errores"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/textView2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Formulario generado:" />
+            android:text="Formulario generado:"
+            android:textColor="#f0f0f8"
+            android:textStyle="bold" />
 
         <ScrollView
             android:layout_width="match_parent"
