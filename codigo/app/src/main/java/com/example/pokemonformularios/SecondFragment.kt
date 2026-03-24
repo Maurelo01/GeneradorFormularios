@@ -75,14 +75,15 @@ class SecondFragment : Fragment()
         }
     }
 
-    private fun cargarPokeApiLectura(vistaContenedor: View, comando: String, tipoPregunta: String, listaCheckboxes: MutableList<CheckBox>? = null)
+    private fun cargarPokeApiLectura(vistaContenedor: View, comando: String, tipoPregunta: String, listaCheckboxes: MutableList<CheckBox>? = null, onFinish: (() -> Unit)? = null)
     {
         val partes = comando.split(":")
         val inicio = partes[1].toInt()
         val fin = partes[2].toInt()
-        val tvCargando = TextView(vistaContenedor.context)
-        tvCargando.text = "Cargando Pokemon..."
-        tvCargando.setTextColor(android.graphics.Color.GRAY)
+        val tvCargando = TextView(vistaContenedor.context).apply{
+            text = "Cargando Pokemon..."
+            setTextColor(android.graphics.Color.GRAY)
+        }
         if (vistaContenedor is ViewGroup && vistaContenedor !is Spinner)
         {
             vistaContenedor.addView(tvCargando)
@@ -110,26 +111,30 @@ class SecondFragment : Fragment()
                 {
                     vistaContenedor.removeView(tvCargando)
                 }
-                if (tipoPregunta == "DROP" && vistaContenedor is Spinner)
+                when
                 {
-                    val adapter = ArrayAdapter(vistaContenedor.context, android.R.layout.simple_spinner_item, listOf("--- Selecciona ---") + descargados)
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    vistaContenedor.adapter = adapter
-                }
-                else if (tipoPregunta == "SELECT" && vistaContenedor is RadioGroup)
-                {
-                    descargados.forEach{ rb ->
-                        vistaContenedor.addView(RadioButton(vistaContenedor.context).apply { text = rb })
+                    tipoPregunta == "DROP" && vistaContenedor is Spinner ->
+                    {
+                        val adapter = ArrayAdapter(vistaContenedor.context, android.R.layout.simple_spinner_item, listOf(" Selecciona ") + descargados)
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        vistaContenedor.adapter = adapter
+                    }
+                    tipoPregunta == "SELECT" && vistaContenedor is RadioGroup ->
+                    {
+                        descargados.forEach{ rb ->
+                            vistaContenedor.addView(RadioButton(vistaContenedor.context).apply { text = rb })
+                        }
+                    }
+                    tipoPregunta == "MULTIPLE" && vistaContenedor is LinearLayout ->
+                    {
+                        descargados.forEach{ cb ->
+                            val check = CheckBox(vistaContenedor.context).apply { text = cb }
+                            vistaContenedor.addView(check)
+                            listaCheckboxes?.add(check)
+                        }
                     }
                 }
-                else if (tipoPregunta == "MULTIPLE" && vistaContenedor is LinearLayout)
-                {
-                    descargados.forEach{ cb ->
-                        val check = CheckBox(vistaContenedor.context).apply { text = cb }
-                        vistaContenedor.addView(check)
-                        listaCheckboxes?.add(check)
-                    }
-                }
+                onFinish?.invoke()
             }
         }.start()
     }
@@ -154,6 +159,11 @@ class SecondFragment : Fragment()
 
     private fun extraerRespuestaCorrecta(linea: String): String
     {
+        val unPar = Regex("\\{([^}]*)\\}").findAll(linea).toList()
+        if (unPar.size >= 2)
+        {
+            return "{" + unPar.last().groupValues[1] + "}"
+        }
         val lastComma = linea.lastIndexOf(",")
         if (lastComma == -1) return ""
         var finStr = linea.indexOf("/>")
@@ -180,19 +190,39 @@ class SecondFragment : Fragment()
         val regexBorder = Regex("""<border=\((.*?),(.*?),(.*?)\)/>""")
         val evaluadores = mutableListOf<() -> Int>()
         var totalCalificables = 0
+        var cargasPendientes = 0
+        var btnEnviar: Button? = null
         for (linea in lineas)
         {
             val l = linea.trim()
-            if (l.isEmpty() || l.startsWith("###") || l.contains(": ") || l == "<style>" || l == "</style>" || l == "<content>" || l == "</content>")
+            val esMetadato = listOf(
+                "Author:", "Fecha:", "Hora:", "Description:",
+                "Total de Secciones:", "Total de Preguntas:",
+                "Abiertas:", "Desplegables:", "Selección:", "Múltiples:"
+            ).any { l.startsWith(it) }
+            if (l.isEmpty() || l.startsWith("###") || l == "<style>" || l == "</style>" || l == "<content>" || l == "</content>" || esMetadato)
             {
                 continue
             }
-
-            if (l == "</section>") { seccionActual = null; continue }
-            if (l == "</table>") { tablaActual = null; continue }
-            if (l == "</line>") { filaActual = null; continue }
-            if (l.startsWith("</")) { continue }
-
+            if (l == "</section>")
+            {
+                seccionActual = null;
+                continue
+            }
+            if (l == "</table>")
+            {
+                tablaActual = null;
+                continue
+            }
+            if (l == "</line>")
+            {
+                filaActual = null;
+                continue
+            }
+            if (l.startsWith("</"))
+            {
+                continue
+            }
             if (regexBackgroundColor.matches(l))
             {
                 val colorStr = regexBackgroundColor.find(l)!!.groupValues[1]
@@ -335,7 +365,11 @@ class SecondFragment : Fragment()
                     layoutPregunta.addView(rg)
                     if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
                     {
-                        cargarPokeApiLectura(rg, opciones[0], "SELECT")
+                        cargasPendientes++
+                        cargarPokeApiLectura(rg, opciones[0], "SELECT", onFinish = {
+                            cargasPendientes--
+                            btnEnviar?.isEnabled = cargasPendientes == 0
+                        })
                     }
                     else
                     {
@@ -360,10 +394,13 @@ class SecondFragment : Fragment()
                     val opciones = extraerOpciones(l)
                     val correctaStr = extraerRespuestaCorrecta(l)
                     val listaCheckboxes = mutableListOf<CheckBox>()
-
                     if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
                     {
-                        cargarPokeApiLectura(layoutPregunta, opciones[0], "MULTIPLE", listaCheckboxes)
+                        cargasPendientes++
+                        cargarPokeApiLectura(layoutPregunta, opciones[0], "MULTIPLE", listaCheckboxes, onFinish = {
+                            cargasPendientes--
+                            btnEnviar?.isEnabled = cargasPendientes == 0
+                        })
                     }
                     else
                     {
@@ -401,7 +438,11 @@ class SecondFragment : Fragment()
 
                     if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
                     {
-                        cargarPokeApiLectura(spinner, opciones[0], "DROP")
+                        cargasPendientes++
+                        cargarPokeApiLectura(spinner, opciones[0], "DROP", onFinish = {
+                            cargasPendientes--
+                            btnEnviar?.isEnabled = cargasPendientes == 0
+                        })
                     }
                     else
                     {
@@ -423,15 +464,18 @@ class SecondFragment : Fragment()
                 ultimoLabel = tvLabel
             }
         }
-
-        val btnEnviar = Button(requireContext()).apply{
+        btnEnviar = Button(requireContext()).apply{
             text = "ENVIAR FORMULARIO"
             setBackgroundColor(android.graphics.Color.parseColor("#29446F"))
             setTextColor(android.graphics.Color.WHITE)
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply{
-                setMargins(0, 48, 0, 32)
-            }
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 48, 0, 32) }
+            isEnabled = cargasPendientes == 0
             setOnClickListener{
+                if (cargasPendientes > 0)
+                {
+                    Toast.makeText(requireContext(), "Espera a que carguen las opciones", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
                 var totalPuntos = 0
                 for (evaluador in evaluadores) totalPuntos += evaluador()
                 if (totalCalificables > 0)

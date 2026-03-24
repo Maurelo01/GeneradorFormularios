@@ -9,6 +9,7 @@ import android.graphics.drawable.GradientDrawable
 import android.text.*
 import android.text.style.ForegroundColorSpan
 import android.content.ContentValues
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
@@ -41,8 +42,14 @@ class FirstFragment : Fragment()
                 if (contenido != null)
                 {
                     val entradaCodigo = view?.findViewById<EditText>(R.id.entradaCodigo)
+                    val contenedorFormulario = view?.findViewById<LinearLayout>(R.id.contenedorFormulario)
                     entradaCodigo?.setText(contenido)
-                    Toast.makeText(requireContext(), "Código cargado exitosamente", Toast.LENGTH_SHORT).show()
+                    if (contenedorFormulario != null && (uri.toString().lowercase().endsWith(".pkm") || contenido.contains("<table=") || contenido.contains("<section=") || contenido.contains("<text=") || contenido.contains("<open=") || contenido.contains("<select=") || contenido.contains("<multiple=") || contenido.contains("<drop=")))
+                    {
+                        contenedorFormulario.removeAllViews()
+                        mostrarArchivoPKM(contenido, contenedorFormulario)
+                    }
+                    Toast.makeText(requireContext(), "Archivo cargado exitosamente", Toast.LENGTH_SHORT).show()
                 }
             }
             catch (e: Exception)
@@ -474,5 +481,378 @@ class FirstFragment : Fragment()
         }
         contenedor.addView(gridLayout)
         dialog.show()
+    }
+
+    private fun mostrarArchivoPKM(codigoPKM: String, contenedorFormulario: LinearLayout)
+    {
+        contenedorFormulario.removeAllViews()
+        var seccionActual: LinearLayout? = null
+        var tablaActual: TableLayout? = null
+        var filaActual: TableRow? = null
+        var ultimoElementoCreado: View? = null
+        var ultimoLabel: TextView? = null
+        val fondosEstilos = mutableMapOf<View, GradientDrawable>()
+        val lineas = codigoPKM.split("\n")
+        val regexBackgroundColor = Regex("<background color=(.*?)/>")
+        val regexColor = Regex("<color=(.*?)/>")
+        val regexFont = Regex("<font family=(.*?)/>")
+        val regexSize = Regex("<text size=(.*?)>")
+        val regexBorder = Regex("""<border=\((.*?),(.*?),(.*?)\)/>""")
+
+        for (linea in lineas)
+        {
+            val l = linea.trim()
+            val esMeta = listOf(
+                "Author:", "Fecha:", "Hora:", "Description:",
+                "Total de Secciones:", "Total de Preguntas:",
+                "Abiertas:", "Desplegables:", "Selección:", "Múltiples:"
+            ).any { l.startsWith(it) }
+
+            if (l.isEmpty() || l.startsWith("###") || l == "<style>" || l == "</style>"
+                || l == "<content>" || l == "</content>" || esMeta)
+            {
+                continue
+            }
+
+            if (l == "</section>") { seccionActual = null; continue }
+            if (l == "</table>") { tablaActual = null; continue }
+            if (l == "</line>") { filaActual = null; continue }
+            if (l.startsWith("</")) { continue }
+
+            if (regexBackgroundColor.matches(l))
+            {
+                val colorStr = regexBackgroundColor.find(l)!!.groupValues[1]
+                val gd = fondosEstilos.getOrPut(ultimoElementoCreado!!) { GradientDrawable() }
+                gd.setColor(parsearColores(colorStr))
+                ultimoElementoCreado?.background = gd
+                continue
+            }
+            else if (regexBorder.matches(l))
+            {
+                val match = regexBorder.find(l)!!
+                val grosor = match.groupValues[1].trim().toFloat().toInt()
+                val tipo = match.groupValues[2].trim()
+                val colorBorde = parsearColores(match.groupValues[3].trim())
+                val gd = fondosEstilos.getOrPut(ultimoElementoCreado!!) { GradientDrawable() }
+                if (tipo == "DOTTED") gd.setStroke(grosor, colorBorde, 15f, 10f)
+                else gd.setStroke(grosor, colorBorde)
+                ultimoElementoCreado?.background = gd
+                continue
+            }
+            else if (regexColor.matches(l))
+            {
+                val colorStr = regexColor.find(l)!!.groupValues[1]
+                ultimoLabel?.setTextColor(parsearColores(colorStr))
+                continue
+            }
+            else if (regexFont.matches(l))
+            {
+                val fontStr = regexFont.find(l)!!.groupValues[1]
+                if (fontStr.contains("MONO")) ultimoLabel?.typeface = Typeface.MONOSPACE
+                else if (fontStr.contains("SANS_SERIF")) ultimoLabel?.typeface = Typeface.SANS_SERIF
+                else if (fontStr.contains("CURSIVE")) ultimoLabel?.typeface = Typeface.create("cursive", Typeface.NORMAL)
+                continue
+            }
+            else if (regexSize.matches(l))
+            {
+                val sizeStr = regexSize.find(l)!!.groupValues[1]
+                ultimoLabel?.textSize = sizeStr.toFloat()
+                continue
+            }
+
+            val obtenerDestino: () -> LinearLayout = lambda@
+            {
+                if (filaActual != null)
+                {
+                    val celda = LinearLayout(requireContext())
+                    celda.orientation = LinearLayout.VERTICAL
+                    val border = GradientDrawable()
+                    border.setColor(Color.WHITE)
+                    border.setStroke(2, Color.parseColor("#CCCCCC"))
+                    celda.background = border
+                    celda.setPadding(16, 16, 16, 16)
+                    val params = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
+                    params.setMargins(4, 4, 4, 4)
+                    celda.layoutParams = params
+
+                    filaActual!!.addView(celda)
+                    return@lambda celda
+                }
+                else
+                {
+                    return@lambda seccionActual ?: contenedorFormulario
+                }
+            }
+
+            when {
+                l.startsWith("<section=") ->
+                {
+                    seccionActual = LinearLayout(requireContext()).apply{
+                        orientation = LinearLayout.VERTICAL
+                        val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                        params.setMargins(0, 16, 0, 48)
+                        layoutParams = params
+                        setPadding(32, 32, 32, 32)
+                    }
+                    contenedorFormulario.addView(seccionActual)
+                    ultimoElementoCreado = seccionActual
+                    ultimoLabel = null
+                }
+                l.startsWith("<table=") ->
+                {
+                    tablaActual = TableLayout(requireContext()).apply{
+                        val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                        params.setMargins(0, 16, 0, 16)
+                        layoutParams = params
+                        setPadding(16, 16, 16, 16)
+                    }
+                    (seccionActual ?: contenedorFormulario).addView(tablaActual)
+                    ultimoElementoCreado = tablaActual
+                    ultimoLabel = null
+                }
+                l == "<line>" ->
+                {
+                    filaActual = TableRow(requireContext())
+                    tablaActual?.addView(filaActual)
+                }
+                l.startsWith("<text=") ->
+                {
+                    val contenido = extraerTexto(l)
+                    val tv = TextView(requireContext()).apply{
+                        text = generarEmojis(contenido)
+                        textSize = 16f
+                        setTextColor(Color.parseColor("#333333"))
+                        setPadding(16, 16, 16, 16)
+                    }
+                    obtenerDestino().addView(tv)
+                    ultimoElementoCreado = tv
+                    ultimoLabel = tv
+                }
+                l.startsWith("<open=") || l.startsWith("<select=") || l.startsWith("<multiple=") || l.startsWith("<drop=") ->
+                {
+                    val labelLimpio = extraerTexto(l)
+                    val layoutPregunta = LinearLayout(requireContext()).apply{
+                        orientation = LinearLayout.VERTICAL
+                        val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                        params.setMargins(0, 16, 0, 32)
+                        layoutParams = params
+                        setPadding(24, 24, 24, 24)
+                    }
+                    val tvLabel = TextView(requireContext()).apply {
+                        textSize = 18f
+                        setTextColor(Color.parseColor("#111111"))
+                        setPadding(0, 0, 0, 16)
+                        text = generarEmojis(labelLimpio)
+                    }
+                    layoutPregunta.addView(tvLabel)
+
+                    when {
+                        l.startsWith("<open=") ->
+                        {
+                            val et = EditText(requireContext())
+                            et.hint = "Tu respuesta..."
+                            layoutPregunta.addView(et)
+                        }
+                        l.startsWith("<select=") ->
+                        {
+                            val opciones = extraerOpciones(l)
+                            val correctaStr = extraerRespuestaCorrecta(l)
+                            val rg = RadioGroup(requireContext())
+                            layoutPregunta.addView(rg)
+                            if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
+                            {
+                                cargarPokeApiLectura(rg, opciones[0], "SELECT")
+                            }
+                            else
+                            {
+                                opciones.forEach{ opt ->
+                                    val rb = RadioButton(requireContext())
+                                    rb.text = generarEmojis(opt)
+                                    rg.addView(rb)
+                                }
+                            }
+                        }
+                        l.startsWith("<multiple=") ->
+                        {
+                            val opciones = extraerOpciones(l)
+                            val listaCheckboxes = mutableListOf<CheckBox>()
+                            if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
+                            {
+                                cargarPokeApiLectura(layoutPregunta, opciones[0], "MULTIPLE", listaCheckboxes)
+                            }
+                            else
+                            {
+                                opciones.forEach { opt ->
+                                    val cb = CheckBox(requireContext())
+                                    cb.text = generarEmojis(opt)
+                                    layoutPregunta.addView(cb)
+                                    listaCheckboxes.add(cb)
+                                }
+                            }
+                        }
+                        l.startsWith("<drop=") ->
+                        {
+                            val opciones = extraerOpciones(l)
+                            val spinner = Spinner(requireContext())
+                            if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
+                            {
+                                cargarPokeApiLectura(spinner, opciones[0], "DROP")
+                            }
+                            else
+                            {
+                                val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listOf(" Selecciona ") + opciones.map { generarEmojis(it) })
+                                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                                spinner.adapter = adapter
+                            }
+                            layoutPregunta.addView(spinner)
+                        }
+                    }
+                    obtenerDestino().addView(layoutPregunta)
+                    ultimoElementoCreado = layoutPregunta
+                    ultimoLabel = tvLabel
+                }
+            }
+        }
+
+        val btnEnviar = Button(requireContext()).apply{
+            text = "ENVIAR FORMULARIO"
+            setBackgroundColor(Color.parseColor("#29446F"))
+            setTextColor(Color.WHITE)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply{
+                setMargins(0, 48, 0, 32)
+            }
+        }
+        contenedorFormulario.addView(btnEnviar)
+        Toast.makeText(requireContext(), "Formulario cargado desde PKM", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun extraerTexto(linea: String): String
+    {
+        val inicio = linea.indexOf("\"")
+        if (inicio == -1) return ""
+        val fin = linea.indexOf("\"", inicio + 1)
+        if (fin == -1) return ""
+        return linea.substring(inicio + 1, fin)
+    }
+
+    private fun extraerOpciones(linea: String): List<String>
+    {
+        val inicio = linea.indexOf("{")
+        val fin = linea.indexOf("}")
+        if (inicio == -1 || fin == -1) return emptyList()
+        val contenido = linea.substring(inicio + 1, fin)
+        return contenido.split(",").map { it.replace("\"", "").trim() }
+    }
+
+    private fun extraerRespuestaCorrecta(linea: String): String
+    {
+        val lastComma = linea.lastIndexOf(",")
+        if (lastComma == -1) return ""
+        var finStr = linea.indexOf("/>")
+        if (finStr == -1) finStr = linea.indexOf(">")
+        if (finStr == -1 || finStr <= lastComma) return ""
+        return linea.substring(lastComma + 1, finStr).trim()
+    }
+
+    private fun parsearColores(colorOriginal: String): Int
+    {
+        val c = colorOriginal.trim().replace("\"", "").uppercase()
+        return when (c)
+        {
+            "RED" -> Color.parseColor("#F80000")
+            "BLUE" -> Color.parseColor("#3F48F4")
+            "GREEN" -> Color.parseColor("#C6DA52")
+            "YELLOW" -> Color.parseColor("#FFFF00")
+            "PURPLE" -> Color.parseColor("#8800FF")
+            "SKY" -> Color.parseColor("#DDF4F5")
+            "BLACK" -> Color.parseColor("#000000")
+            "WHITE" -> Color.parseColor("#FFFFFF")
+            else ->
+            {
+                try
+                {
+                    if (c.startsWith("(") && c.endsWith(")"))
+                    {
+                        val rgb = c.replace("(", "").replace(")", "").split(",")
+                        Color.rgb(rgb[0].trim().toInt(), rgb[1].trim().toInt(), rgb[2].trim().toInt())
+                    }
+                    else if (c.startsWith("<") && c.endsWith(">"))
+                    {
+                        val hsl = c.replace("<", "").replace(">", "").split(",")
+                        ColorUtils.HSLToColor(floatArrayOf(hsl[0].trim().toFloat(), hsl[1].trim().toFloat() / 100f, hsl[2].trim().toFloat() / 100f))
+                    }
+                    else
+                    {
+                        Color.parseColor(c)
+                    }
+                }
+                catch (e: Exception)
+                {
+                    Color.TRANSPARENT
+                }
+            }
+        }
+    }
+
+    private fun cargarPokeApiLectura(vistaContenedor: View, comando: String, tipoPregunta: String, listaCheckboxes: MutableList<CheckBox>? = null)
+    {
+        val partes = comando.split(":")
+        val inicio = partes[1].toInt()
+        val fin = partes[2].toInt()
+        val tvCargando = TextView(vistaContenedor.context).apply{
+            text = "Cargando Pokemon..."
+            setTextColor(Color.GRAY)
+        }
+        if (vistaContenedor is ViewGroup && vistaContenedor !is Spinner)
+        {
+            vistaContenedor.addView(tvCargando)
+        }
+        Thread{
+            val descargados = mutableListOf<String>()
+            for (i in inicio..fin)
+            {
+                try
+                {
+                    val url = java.net.URL("https://pokeapi.co/api/v2/pokemon/$i")
+                    val conn = url.openConnection() as java.net.HttpURLConnection
+                    conn.requestMethod = "GET"
+                    val response = conn.inputStream.bufferedReader().use { it.readText() }
+                    val nombre = org.json.JSONObject(response).getString("name")
+                    descargados.add(nombre.replaceFirstChar { it.uppercase() })
+                }
+                catch (_: Exception)
+                {
+                    descargados.add("Error #$i")
+                }
+            }
+            activity?.runOnUiThread{
+                if (vistaContenedor is ViewGroup && vistaContenedor !is Spinner)
+                {
+                    vistaContenedor.removeView(tvCargando)
+                }
+                when {
+                    tipoPregunta == "DROP" && vistaContenedor is Spinner ->
+                    {
+                        val adapter = ArrayAdapter(vistaContenedor.context, android.R.layout.simple_spinner_item, listOf(" Selecciona ") + descargados)
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        vistaContenedor.adapter = adapter
+                    }
+                    tipoPregunta == "SELECT" && vistaContenedor is RadioGroup ->
+                    {
+                        descargados.forEach{ rb ->
+                            vistaContenedor.addView(RadioButton(vistaContenedor.context).apply { text = rb })
+                        }
+                    }
+                    tipoPregunta == "MULTIPLE" && vistaContenedor is LinearLayout ->
+                    {
+                        descargados.forEach{ cb ->
+                            val check = CheckBox(vistaContenedor.context).apply { text = cb }
+                            vistaContenedor.addView(check)
+                            listaCheckboxes?.add(check)
+                        }
+                    }
+                }
+            }
+        }.start()
     }
 }
