@@ -14,9 +14,14 @@ public class OperacionAritmetica implements Expresion
     @Override
     public Object evaluar(Entorno ent)
     {
-        Object valIzq = (izq != null) ? izq.evaluar(ent) : null;
         Object valDer = (der != null) ? der.evaluar(ent) : null;
-        if (valIzq == null || (der != null && valDer == null)) return null;
+        if (operador.equals("UNARIO_MENOS"))
+        {
+            if (valDer instanceof Double) return -((Double) valDer);
+            return null;
+        }
+        Object valIzq = (izq != null) ? izq.evaluar(ent) : null;
+        if (valIzq == null || valDer == null) return null;
         if (operador.equals("+"))
         {
             if (valIzq instanceof Double && valDer instanceof Double)
@@ -46,10 +51,6 @@ public class OperacionAritmetica implements Expresion
                 case "^": return Math.pow(num1, num2);
                 case "%": return num1 % num2;
             }
-        }
-        if (operador.equals("UNARIO_MENOS") && valDer instanceof Double)
-        {
-            return -((Double) valDer);
         }
         System.err.println("Error Semántico: Tipos inválidos para la operación '" + operador + "'.");
         return null;

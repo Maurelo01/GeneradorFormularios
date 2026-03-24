@@ -830,7 +830,8 @@ class FirstFragment : Fragment()
                 {
                     vistaContenedor.removeView(tvCargando)
                 }
-                when {
+                when
+                {
                     tipoPregunta == "DROP" && vistaContenedor is Spinner ->
                     {
                         val adapter = ArrayAdapter(vistaContenedor.context, android.R.layout.simple_spinner_item, listOf(" Selecciona ") + descargados)
