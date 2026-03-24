@@ -1,14 +1,20 @@
 package com.example.pokemonformularios.ast;
 
+import com.example.pokemonformularios.reportes.ErrorCompi;
+
 public class Asignacion implements Instruccion
 {
     private String id;
     private Expresion valorExpresion;
+    private int linea;
+    private int columna;
 
-    public Asignacion(String id, Expresion valorExpresion)
+    public Asignacion(String id, Expresion valorExpresion, int linea, int columna)
     {
         this.id = id;
         this.valorExpresion = valorExpresion;
+        this.linea = linea;
+        this.columna = columna;
     }
 
     @Override
@@ -19,17 +25,23 @@ public class Asignacion implements Instruccion
         Simbolo sim = ent.obtenerVariable(id);
         if (sim == null)
         {
-            System.err.println("Error Semántico: La variable '" + id + "' no existe.");
+            String mensaje = "La variable '" + id + "' no existe.";
+            System.err.println("Error Semántico: " + mensaje);
+            ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, linea, columna));
             return null;
         }
         if (sim.getTipo().equals("number") && !(nuevoValor instanceof Double))
         {
-            System.err.println("Error Semántico: No puedes asignar un texto a la variable numérica '" + id + "'");
+            String mensaje = "No puedes asignar un texto a la variable numérica '" + id + "'";
+            System.err.println("Error Semántico: " + mensaje);
+            ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, linea, columna));
             return null;
         }
         if (sim.getTipo().equals("string") && !(nuevoValor instanceof String))
         {
-            System.err.println("Error Semántico: No puedes asignar un número a la variable de texto '" + id + "'");
+            String mensaje = "No puedes asignar un número a la variable de texto '" + id + "'";
+            System.err.println("Error Semántico: " + mensaje);
+            ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, linea, columna));
             return null;
         }
         ent.reasignarVariable(id, nuevoValor);

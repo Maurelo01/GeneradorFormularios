@@ -1085,7 +1085,7 @@ class CUP$ParserFormulario$actions {
 		int eright = ((Symbol)CUP$ParserFormulario$stack.peek()).right;
 		Expresion e = (Expresion)((Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new Declaracion("number", id, e);
+        RESULT = new Declaracion("number", id.toString(), e, idleft, idright);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("declaracion",3, ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1099,7 +1099,7 @@ class CUP$ParserFormulario$actions {
 		int idright = ((Symbol)CUP$ParserFormulario$stack.peek()).right;
 		String id = (String)((Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new Declaracion("number", id, null);
+        RESULT = new Declaracion("number", id.toString(), null, idleft, idright);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("declaracion",3, ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1116,7 +1116,7 @@ class CUP$ParserFormulario$actions {
 		int eright = ((Symbol)CUP$ParserFormulario$stack.peek()).right;
 		Expresion e = (Expresion)((Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new Declaracion("string", id, e);
+        RESULT = new Declaracion("string", id.toString(), e, idleft, idright);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("declaracion",3, ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-3)), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1130,7 +1130,7 @@ class CUP$ParserFormulario$actions {
 		int idright = ((Symbol)CUP$ParserFormulario$stack.peek()).right;
 		String id = (String)((Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new Declaracion("string", id, null);
+        RESULT = new Declaracion("string", id.toString(), null, idleft, idright);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("declaracion",3, ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -1197,7 +1197,7 @@ class CUP$ParserFormulario$actions {
 		int eright = ((Symbol)CUP$ParserFormulario$stack.peek()).right;
 		Expresion e = (Expresion)((Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new Asignacion(id, e);
+        RESULT = new Asignacion(id.toString(), e, idleft, idright);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("asignacion",4, ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-2)), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -2394,7 +2394,7 @@ class CUP$ParserFormulario$actions {
 		int e2right = ((Symbol)CUP$ParserFormulario$stack.peek()).right;
 		Expresion e2 = (Expresion)((Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new OperacionLogica(e1, "&&", e2);
+        RESULT = new OperacionLogica(e1, "&&", e2, e1left, e1right);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("expresion",22, ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-2)), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -2411,7 +2411,7 @@ class CUP$ParserFormulario$actions {
 		int e2right = ((Symbol)CUP$ParserFormulario$stack.peek()).right;
 		Expresion e2 = (Expresion)((Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new OperacionLogica(e1, "||", e2);
+        RESULT = new OperacionLogica(e1, "||", e2, e1left, e1right);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("expresion",22, ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-2)), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
@@ -2421,11 +2421,14 @@ class CUP$ParserFormulario$actions {
           case 99: // expresion ::= NOT expresion 
             {
               Expresion RESULT =null;
+		int nleft = ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).left;
+		int nright = ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).right;
+		String n = (String)((Symbol) CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)).value;
 		int eleft = ((Symbol)CUP$ParserFormulario$stack.peek()).left;
 		int eright = ((Symbol)CUP$ParserFormulario$stack.peek()).right;
 		Expresion e = (Expresion)((Symbol) CUP$ParserFormulario$stack.peek()).value;
 		
-        RESULT = new OperacionLogica("~", e);
+        RESULT = new OperacionLogica("~", e, nleft, nright);
     
               CUP$ParserFormulario$result = parser.getSymbolFactory().newSymbol("expresion",22, ((Symbol)CUP$ParserFormulario$stack.elementAt(CUP$ParserFormulario$top-1)), ((Symbol)CUP$ParserFormulario$stack.peek()), RESULT);
             }
