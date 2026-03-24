@@ -29,7 +29,8 @@ public class ComponenteSeccion implements Instruccion
         String width = "-1", height = "-1", pointX = "-1", pointY = "-1";
         for (Atributo attr : atributos)
         {
-            switch (attr.getNombre())
+            String nombreAttr = attr.getNombre().replace("\"", "").trim();
+            switch (nombreAttr)
             {
                 case "elements":
                     elementosHijos = (List<Instruccion>) attr.getValor();
@@ -83,7 +84,6 @@ public class ComponenteSeccion implements Instruccion
         {
             pkmBuilder.append("<style>\n");
             GradientDrawable fondoYBorde = new GradientDrawable();
-            fondoYBorde.setCornerRadius(24f);
             boolean aplicarFondoYBorde = false;
             for (Atributo estilo : listaEstilos)
             {

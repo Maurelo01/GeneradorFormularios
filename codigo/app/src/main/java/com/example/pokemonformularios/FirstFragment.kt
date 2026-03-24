@@ -2,32 +2,47 @@ package com.example.pokemonformularios
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.text.*
+import android.text.style.ForegroundColorSpan
+import android.content.ContentValues
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import androidx.navigation.fragment.findNavController
 import androidx.fragment.app.Fragment
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.graphics.ColorUtils
 import com.example.pokemonformularios.analizador.LexerFormulario
 import com.example.pokemonformularios.analizador.ParserFormulario
 import com.example.pokemonformularios.ast.Entorno
 import com.example.pokemonformularios.ast.Instruccion
 import com.example.pokemonformularios.reportes.ErrorCompi
 import java.io.StringReader
+import java.text.SimpleDateFormat
+import java.util.regex.Pattern
+import java.util.Date
+import java.util.Locale
 
 class FirstFragment : Fragment()
 {
     private var listaErroresActuales: List<ErrorCompi> = emptyList()
 
-    private val abrirArchivoPKM = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent())
+    private val abrirArchivoForm = registerForActivityResult(ActivityResultContracts.GetContent())
     { uri ->
-        uri?.let{
+        uri?.let {
             try
             {
                 val inputStream = requireContext().contentResolver.openInputStream(it)
                 val contenido = inputStream?.bufferedReader().use { reader -> reader?.readText() }
                 if (contenido != null)
                 {
-                    mostrarArchivoPKM(contenido)
+                    val entradaCodigo = view?.findViewById<EditText>(R.id.entradaCodigo)
+                    entradaCodigo?.setText(contenido)
+                    Toast.makeText(requireContext(), "Código cargado exitosamente", Toast.LENGTH_SHORT).show()
                 }
             }
             catch (e: Exception)
@@ -52,14 +67,15 @@ class FirstFragment : Fragment()
         val btnPlantilla = view.findViewById<Button>(R.id.btnPlantilla)
         val btnColor = view.findViewById<Button>(R.id.btnColor)
         val btnExportarPKM = view.findViewById<Button>(R.id.btnExportarPKM)
-        val btnCargarPKM = view.findViewById<Button>(R.id.btnCargarPKM)
+        val btnCargarArchivo = view.findViewById<Button>(R.id.btnCargarArchivo)
+        val btnIrAContestar = view.findViewById<Button>(R.id.btnIrAContestar)
         btnErrores.isEnabled = false
         btnExportarPKM.visibility = View.GONE
-        entradaCodigo.addTextChangedListener(object : android.text.TextWatcher
+        entradaCodigo.addTextChangedListener(object : TextWatcher
         {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: android.text.Editable?)
+            override fun afterTextChanged(s: Editable?)
             {
                 entradaCodigo.removeTextChangedListener(this)
                 colorearSintaxis(s)
@@ -87,8 +103,8 @@ class FirstFragment : Fragment()
             mostrarSelectorDeColor(entradaCodigo)
         }
 
-        btnCargarPKM.setOnClickListener{
-            abrirArchivoPKM.launch("*/*")
+        btnCargarArchivo.setOnClickListener{
+            abrirArchivoForm.launch("*/*")
         }
 
         btnCompilar.setOnClickListener{
@@ -98,337 +114,28 @@ class FirstFragment : Fragment()
         btnErrores.setOnClickListener{
             mostrarTablaErrores()
         }
-    }
 
-    private fun mostrarArchivoPKM(codigoPKM: String)
-    {
-        val contenedorFormulario = view?.findViewById<LinearLayout>(R.id.contenedorFormulario) ?: return
-        contenedorFormulario.removeAllViews()
-        var seccionActual: LinearLayout? = null
-        var tablaActual: TableLayout? = null
-        var filaActual: TableRow? = null
-        val lineas = codigoPKM.split("\n")
-        val regexSeccion = Regex("<section=.*?>")
-        val regexCierreSeccion = Regex("</section>")
-        val regexContent = Regex("<content>|</content>")
-        val regexOpen = Regex("""<open=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)"\s*/>""")
-        val regexSelect = Regex("""<select=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)",\s*\{(.*?)\},\s*(.+?)\s*/>""")
-        val regexMultiple = Regex("""<multiple=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)",\s*\{(.*?)\},\s*(.+?)\s*/>""")
-        val regexDrop = Regex("""<drop=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)",\s*\{(.*?)\},\s*(.+?)\s*/>""")
-        val regexTabla = Regex("<table=-?\\d+(\\.\\d+)?,\\s*-?\\d+(\\.\\d+)?>")
-        val regexCierreTabla = Regex("</table>")
-        val regexLinea = Regex("<line>")
-        val regexCierreLinea = Regex("</line>")
-        val regexTexto = Regex("""<text=-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?,\s*"(.*?)"\s*/>""")
-        val evaluadores = mutableListOf<() -> Int>()
-        var totalCalificables = 0
-        for (linea in lineas)
-        {
-            val l = linea.trim()
-            if (l.isEmpty() || regexContent.matches(l) || l.startsWith("###") || l.contains(": ")) continue
-            val obtenerDestino: () -> LinearLayout =
-            {
-                if (filaActual != null)
-                {
-                    val celda = LinearLayout(requireContext())
-                    celda.orientation = LinearLayout.VERTICAL
-                    val border = android.graphics.drawable.GradientDrawable()
-                    border.setColor(android.graphics.Color.WHITE)
-                    border.setStroke(3, android.graphics.Color.BLACK)
-                    celda.background = border
-                    celda.setPadding(16, 16, 16, 16)
-                    val params = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
-                    params.setMargins(4, 4, 4, 4)
-                    celda.layoutParams = params
-                    filaActual!!.addView(celda)
-                    celda
-                }
-                else
-                {
-                    seccionActual ?: contenedorFormulario
-                }
-            }
-            if (regexSeccion.matches(l))
-            {
-                seccionActual = LinearLayout(requireContext())
-                seccionActual?.orientation = LinearLayout.VERTICAL
-                val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-                params.setMargins(0, 16, 0, 48)
-                seccionActual?.layoutParams = params
-                contenedorFormulario.addView(seccionActual)
-            }
-            else if (regexCierreSeccion.matches(l))
-            {
-                seccionActual = null
-            }
-            else if (regexTabla.matches(l))
-            {
-                tablaActual = TableLayout(requireContext())
-                val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-                params.setMargins(0, 16, 0, 16)
-                tablaActual!!.layoutParams = params
-                tablaActual!!.isStretchAllColumns = true
-                (seccionActual ?: contenedorFormulario).addView(tablaActual)
-            }
-            else if (regexCierreTabla.matches(l))
-            {
-                tablaActual = null
-            }
-            else if (regexLinea.matches(l))
-            {
-                filaActual = TableRow(requireContext())
-                tablaActual?.addView(filaActual)
-            }
-            else if (regexCierreLinea.matches(l))
-            {
-                filaActual = null
-            }
-            else if (regexOpen.matches(l))
-            {
-                val coincidencia = regexOpen.find(l)!!
-                val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
-                val destino = obtenerDestino()
-                agregarLabelPKM(destino, labelLimpio)
-                val et = EditText(requireContext())
-                et.hint = "Tu respuesta..."
-                destino.addView(et)
-            }
-            else if (regexSelect.matches(l))
-            {
-                val coincidencia = regexSelect.find(l)!!
-                val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
-                val destino = obtenerDestino()
-                agregarLabelPKM(destino, labelLimpio)
-                val opciones = coincidencia.groupValues[4].split(",").map { it.replace("\"", "").trim() }
-                val correctaStr = coincidencia.groupValues[5].trim()
-                val rg = RadioGroup(requireContext())
-                destino.addView(rg)
-                if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
-                {
-                    cargarPokeApiLectura(rg, opciones[0], "SELECT")
-                }
-                else
-                {
-                    opciones.forEach{ opt ->
-                        val rb = RadioButton(requireContext())
-                        rb.text = generarEmojis(opt)
-                        rg.addView(rb)
-                    }
-                }
-                val indexCorrecto = correctaStr.toDoubleOrNull()?.toInt() ?: -1
-                if (indexCorrecto != -1)
-                {
-                    totalCalificables++
-                    evaluadores.add{
-                        val rbId = rg.checkedRadioButtonId
-                        if (rbId != -1)
-                        {
-                            val rb = rg.findViewById<View>(rbId)
-                            val indiceSeleccionado = rg.indexOfChild(rb)
-                            if (indiceSeleccionado == indexCorrecto) 1 else 0
-                        }
-                        else 0
-                    }
-                }
-            }
-            else if (regexMultiple.matches(l))
-            {
-                val coincidencia = regexMultiple.find(l)!!
-                val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
-                val destino = obtenerDestino()
-                agregarLabelPKM(destino, labelLimpio)
-                val opciones = coincidencia.groupValues[4].split(",").map { it.replace("\"", "").trim() }
-                val correctaStr = coincidencia.groupValues[5].trim()
-                val listaCheckboxes = mutableListOf<CheckBox>()
-                val contenedorMultiple = destino
-                if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
-                {
-                    cargarPokeApiLectura(destino, opciones[0], "MULTIPLE", listaCheckboxes)
-                }
-                else
-                {
-                    opciones.forEach { opt ->
-                        val cb = CheckBox(requireContext())
-                        cb.text = generarEmojis(opt)
-                        contenedorMultiple.addView(cb)
-                        listaCheckboxes.add(cb)
-                    }
-                }
-                val correctasLimpio = correctaStr.replace("{", "").replace("}", "")
-                val correctasIds = correctasLimpio.split(",").mapNotNull { it.trim().toDoubleOrNull()?.toInt() }
-                if (correctasIds.isNotEmpty() && correctasIds[0] != -1)
-                {
-                    totalCalificables++
-                    evaluadores.add{
-                        var marcadas = 0
-                        var aciertos = 0
-                        for (i in listaCheckboxes.indices)
-                        {
-                            if (listaCheckboxes[i].isChecked)
-                            {
-                                marcadas++
-                                if (correctasIds.contains(i)) aciertos++
-                            }
-                        }
-                        if (aciertos == correctasIds.size && marcadas == correctasIds.size) 1 else 0
-                    }
-                }
-            }
-            else if (regexDrop.matches(l))
-            {
-                val coincidencia = regexDrop.find(l)!!
-                val labelLimpio = coincidencia.groupValues[3].replace("\"", "")
-                val destino = obtenerDestino()
-                agregarLabelPKM(destino, labelLimpio)
-                val opciones = coincidencia.groupValues[4].split(",").map { it.replace("\"", "").trim() }
-                val correctaStr = coincidencia.groupValues[5].trim()
-                val spinner = Spinner(requireContext())
-                if (opciones.size == 1 && opciones[0].startsWith("POKEAPI:"))
-                {
-                    cargarPokeApiLectura(spinner, opciones[0], "DROP")
-                }
-                else
-                {
-                    val opcionesGeneradas = opciones.map { generarEmojis(it) }
-                    val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listOf(" Selecciona ") + opciones)
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    spinner.adapter = adapter
-                }
-                destino.addView(spinner)
-                val indexCorrecto = correctaStr.toDoubleOrNull()?.toInt() ?: -1
-                if (indexCorrecto != -1)
-                {
-                    totalCalificables++
-                    evaluadores.add{
-                        val indiceSeleccionado = spinner.selectedItemPosition
-                        if (indiceSeleccionado -1 == indexCorrecto) 1 else 0
-                    }
-                }
-            }
-            else if (regexTexto.matches(l))
-            {
-                val coincidencia = regexTexto.find(l)!!
-                val contenido = coincidencia.groupValues[3]
-                val destino = obtenerDestino()
-                agregarLabelPKM(destino, contenido)
-            }
+        btnIrAContestar.setOnClickListener{
+            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
         }
-        val btnEnviar = Button(requireContext())
-        btnEnviar.text = "ENVIAR FORMULARIO"
-        btnEnviar.setBackgroundColor(android.graphics.Color.parseColor("#29446F"))
-        btnEnviar.setTextColor(android.graphics.Color.WHITE)
-        val paramsBtn = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        paramsBtn.setMargins(0, 32, 0, 32)
-        btnEnviar.layoutParams = paramsBtn
-        btnEnviar.setOnClickListener{
-            var totalPuntos = 0
-            for (evaluador in evaluadores)
-            {
-                totalPuntos += evaluador()
-            }
-            if (totalCalificables > 0)
-            {
-                AlertDialog.Builder(requireContext()).setTitle("Formulario Enviado").setMessage("Tu puntuación es:\n$totalPuntos de $totalCalificables correctas.").setPositiveButton("Aceptar", null).show()
-            }
-            else
-            {
-                Toast.makeText(requireContext(), "Formulario enviado exitosamente.", Toast.LENGTH_LONG).show()
-            }
-        }
-        contenedorFormulario.addView(btnEnviar)
-        Toast.makeText(requireContext(), "Formulario .PKM cargado y listo", Toast.LENGTH_LONG).show()
     }
 
-    private fun agregarLabelPKM(parent: LinearLayout, text: String)
-    {
-        val tv = TextView(requireContext())
-        tv.text = generarEmojis(text)
-        tv.textSize = 16f
-        tv.setTextColor(android.graphics.Color.parseColor("#333333"))
-        tv.setPadding(0, 16, 0, 16)
-        parent.addView(tv)
-    }
-
-    private fun cargarPokeApiLectura(vistaContenedor: View, comando: String, tipoPregunta: String, listaCheckboxes: MutableList<CheckBox>? = null)
-    {
-        val partes = comando.split(":")
-        val inicio = partes[1].toInt()
-        val fin = partes[2].toInt()
-        val tvCargando = TextView(vistaContenedor.context)
-        tvCargando.text = "Cargando Pokemon..."
-        tvCargando.setTextColor(android.graphics.Color.GRAY)
-        if (vistaContenedor is ViewGroup && vistaContenedor !is Spinner)
-        {
-            vistaContenedor.addView(tvCargando)
-        }
-        Thread {
-            val descargados = mutableListOf<String>()
-            for (i in inicio..fin)
-            {
-                try
-                {
-                    val url = java.net.URL("https://pokeapi.co/api/v2/pokemon/$i")
-                    val conn = url.openConnection() as java.net.HttpURLConnection
-                    conn.requestMethod = "GET"
-                    val response = conn.inputStream.bufferedReader().use{ it.readText() }
-                    val jsonObject = org.json.JSONObject(response)
-                    var nombre = jsonObject.getString("name")
-                    nombre = nombre.replaceFirstChar { it.uppercase() }
-                    descargados.add(nombre)
-                }
-                catch (e: Exception)
-                {
-                    descargados.add("Error #$i")
-                }
-            }
-            activity?.runOnUiThread{
-                if (vistaContenedor is ViewGroup && vistaContenedor !is Spinner)
-                {
-                    vistaContenedor.removeView(tvCargando)
-                }
-                if (tipoPregunta == "DROP" && vistaContenedor is Spinner)
-                {
-                    val adapter = ArrayAdapter(vistaContenedor.context, android.R.layout.simple_spinner_item, listOf("--- Selecciona ---") + descargados)
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    vistaContenedor.adapter = adapter
-                }
-                else if (tipoPregunta == "SELECT" && vistaContenedor is RadioGroup)
-                {
-                    descargados.forEach{ nombre ->
-                        val rb = RadioButton(vistaContenedor.context)
-                        rb.text = nombre
-                        vistaContenedor.addView(rb)
-                    }
-                }
-                else if (tipoPregunta == "MULTIPLE" && vistaContenedor is LinearLayout)
-                {
-                    descargados.forEach { nombre ->
-                        val cb = CheckBox(vistaContenedor.context)
-                        cb.text = nombre
-                        vistaContenedor.addView(cb)
-                        listaCheckboxes?.add(cb)
-                    }
-                }
-            }
-        }.start()
-    }
-
-    private fun colorearSintaxis(editable: android.text.Editable?)
+    private fun colorearSintaxis(editable: Editable?)
     {
         if (editable == null) return
         val texto = editable.toString()
-        val spans = editable.getSpans(0, editable.length, android.text.style.ForegroundColorSpan::class.java)
+        val spans = editable.getSpans(0, editable.length, ForegroundColorSpan::class.java)
         for (span in spans)
         {
             editable.removeSpan(span)
         }
         fun aplicarColor(regex: String, colorHex: String)
         {
-            val patron = java.util.regex.Pattern.compile(regex)
+            val patron = Pattern.compile(regex)
             val matcher = patron.matcher(texto)
             while (matcher.find())
             {
-                editable.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor(colorHex)), matcher.start(), matcher.end(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                editable.setSpan(ForegroundColorSpan(Color.parseColor(colorHex)), matcher.start(), matcher.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
         aplicarColor("(\\$.*)|(/\\*[\\s\\S]*?\\*/)", "#808080")
@@ -487,8 +194,8 @@ class FirstFragment : Fragment()
                 }
                 val btnEnviar = Button(requireContext())
                 btnEnviar.text = "Enviar Formulario"
-                btnEnviar.setBackgroundColor(android.graphics.Color.parseColor("#29446F"))
-                btnEnviar.setTextColor(android.graphics.Color.WHITE)
+                btnEnviar.setBackgroundColor(Color.parseColor("#29446F"))
+                btnEnviar.setTextColor(Color.WHITE)
                 val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                 params.setMargins(0, 32, 0, 32)
                 btnEnviar.layoutParams = params
@@ -595,8 +302,8 @@ class FirstFragment : Fragment()
 
     private fun guardarArchivoPKM(entorno: Entorno, nombreArchivo: String, autor: String, descripcion: String)
     {
-        val fecha = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(java.util.Date())
-        val hora = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
+        val fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+        val hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
         val metadatos = """
             ###
             ###
@@ -615,16 +322,42 @@ class FirstFragment : Fragment()
         val contenidoFinal = metadatos + "\n" + entorno.pkmBuilder.toString()
         try
         {
-            val carpetaDestino = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
-            val file = java.io.File(carpetaDestino, nombreArchivo)
-            file.writeText(contenidoFinal)
-            Toast.makeText(requireContext(), " Guardado en Descargas:\n$nombreArchivo", Toast.LENGTH_LONG).show()
-            println(" Archivo .PKM Generado \n$contenidoFinal\n ")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            {
+                val resolver = requireContext().contentResolver
+                val contentValues = ContentValues().apply{
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, nombreArchivo)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "application/octet-stream")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
+                val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri != null)
+                {
+                    resolver.openOutputStream(uri)?.use { outputStream ->
+                        outputStream.write(contenidoFinal.toByteArray())
+                    }
+                    Toast.makeText(requireContext(), "Guardado en Descargas:\n$nombreArchivo", Toast.LENGTH_LONG).show()
+                    println(" Archivo .PKM Generado \n$contenidoFinal\n ")
+                }
+                else
+                {
+                    Toast.makeText(requireContext(), "Error al crear el archivo en Descargas", Toast.LENGTH_SHORT).show()
+                }
+
+            }
+            else
+            {
+                val carpetaDestino = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                val file = java.io.File(carpetaDestino, nombreArchivo)
+                file.writeText(contenidoFinal)
+                Toast.makeText(requireContext(), "Guardado en Descargas:\n$nombreArchivo", Toast.LENGTH_LONG).show()
+                println(" Archivo .PKM Generado \n$contenidoFinal\n ")
+            }
         }
         catch(e: Exception)
         {
             e.printStackTrace()
-            Toast.makeText(requireContext(), "Error al guardar .PKM", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Error al guardar .PKM: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -651,7 +384,7 @@ class FirstFragment : Fragment()
             }
             else
             {
-                val fechaHoraArchivo = java.text.SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", java.util.Locale.getDefault()).format(java.util.Date())
+                val fechaHoraArchivo = SimpleDateFormat("dd-MM-yyyy_HH-mm-ss", Locale.getDefault()).format(Date())
                 "pokemon_form_$fechaHoraArchivo.pkm"
             }
             val autor = inputAutor.text.toString().ifBlank{ "Autor Desconocido" }
@@ -674,7 +407,7 @@ class FirstFragment : Fragment()
         val contenedor = LinearLayout(requireContext()).apply{
             orientation = LinearLayout.VERTICAL
             setPadding(32, 32, 32, 32)
-            gravity = android.view.Gravity.CENTER
+            gravity = Gravity.CENTER
         }
         val gridLayout = GridLayout(requireContext()).apply{
             columnCount = 4
@@ -691,27 +424,26 @@ class FirstFragment : Fragment()
                     setMargins(16, 16, 16, 16)
                 }
                 layoutParams = params
-                val border = android.graphics.drawable.GradientDrawable()
+                val border = GradientDrawable()
                 val hexLimpio = colorHex.trim()
-                var colorInt = android.graphics.Color.GRAY
+                var colorInt = Color.GRAY
                 try
                 {
-                    colorInt = android.graphics.Color.parseColor(hexLimpio)
+                    colorInt = Color.parseColor(hexLimpio)
                     border.setColor(colorInt)
                 }
                 catch (e: Exception)
                 {
                     border.setColor(colorInt)
                 }
-                border.setStroke(3, android.graphics.Color.DKGRAY)
-                border.cornerRadius = 24f
+                border.setStroke(3, Color.DKGRAY)
                 background = border
                 setOnClickListener{
-                    val r = android.graphics.Color.red(colorInt)
-                    val g = android.graphics.Color.green(colorInt)
-                    val b = android.graphics.Color.blue(colorInt)
+                    val r = Color.red(colorInt)
+                    val g = Color.green(colorInt)
+                    val b = Color.blue(colorInt)
                     val hsl = FloatArray(3)
-                    androidx.core.graphics.ColorUtils.colorToHSL(colorInt, hsl)
+                    ColorUtils.colorToHSL(colorInt, hsl)
                     val h = hsl[0].toInt()
                     val s = (hsl[1] * 100).toInt()
                     val l = (hsl[2] * 100).toInt()
