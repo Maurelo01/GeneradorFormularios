@@ -29,7 +29,8 @@ public class ComponenteTabla implements Instruccion
         String width = "-1", height = "-1";
         for (Atributo attr : atributos)
         {
-            switch (attr.getNombre())
+            String nombreAttr = attr.getNombre().replace("\"", "").trim();
+            switch (nombreAttr)
             {
                 case "elements_table":
                     filas = (List<Object>) attr.getValor();
@@ -49,16 +50,16 @@ public class ComponenteTabla implements Instruccion
         }
 
         if (filas.isEmpty()) return null;
-        TableLayout tableLayout = null;
+        LinearLayout tableLayout = null;
         LinearLayout layoutOriginal = null;
         if (ent.getContexto() != null && ent.getLayoutActual() != null)
         {
-            tableLayout = new TableLayout(ent.getContexto());
+            tableLayout = new LinearLayout(ent.getContexto());
+            tableLayout.setOrientation(LinearLayout.VERTICAL);
             layoutOriginal = ent.getLayoutActual();
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             params.setMargins(0, 16, 0, 32);
             tableLayout.setLayoutParams(params);
-            tableLayout.setStretchAllColumns(true);
             tableLayout.setPadding(16, 16, 16, 16);
         }
         StringBuilder pkmBuilder = new StringBuilder();
@@ -67,7 +68,6 @@ public class ComponenteTabla implements Instruccion
         {
             pkmBuilder.append("<style>\n");
             GradientDrawable fondoYBorde = new GradientDrawable();
-            fondoYBorde.setCornerRadius(16f);
             boolean aplicarFondoYBorde = false;
             for (Atributo estilo : listaEstilos)
             {
@@ -140,10 +140,13 @@ public class ComponenteTabla implements Instruccion
             if (filaObj instanceof List)
             {
                 List<Instruccion> componentesFila = (List<Instruccion>) filaObj;
-                TableRow tableRow = null;
+                LinearLayout tableRow = null;
                 if (tableLayout != null)
                 {
-                    tableRow = new TableRow(ent.getContexto());
+                    tableRow = new LinearLayout(ent.getContexto());
+                    tableRow.setOrientation(LinearLayout.HORIZONTAL);
+                    LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                    tableRow.setLayoutParams(rowParams);
                     tableLayout.addView(tableRow);
                 }
                 ent.getPkmBuilder().append("<line>\n");
@@ -160,7 +163,7 @@ public class ComponenteTabla implements Instruccion
                             borderCelda.setStroke(2, android.graphics.Color.parseColor("#CCCCCC"));
                             celda.setBackground(borderCelda);
                             celda.setPadding(16, 16, 16, 16);
-                            TableRow.LayoutParams cellParams = new TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f);
+                            LinearLayout.LayoutParams cellParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
                             cellParams.setMargins(4, 4, 4, 4);
                             celda.setLayoutParams(cellParams);
                             tableRow.addView(celda);

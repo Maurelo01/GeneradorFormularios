@@ -25,7 +25,8 @@ public class ComponenteTexto implements Instruccion
         List<Atributo> listaEstilos = null;
         for (Atributo attr : atributos)
         {
-            if (attr.getNombre().equals("content"))
+            String nombreAttr = attr.getNombre().replace("\"", "").trim();
+            if (nombreAttr.equals("content"))
             {
                 Object val = ((Expresion) attr.getValor()).evaluar(ent);
                 if (val != null)
@@ -33,7 +34,7 @@ public class ComponenteTexto implements Instruccion
                     contenido = val.toString();
                 }
             }
-            else if (attr.getNombre().equals("styles"))
+            else if (nombreAttr.equals("styles"))
             {
                 listaEstilos = (List<Atributo>) attr.getValor();
             }

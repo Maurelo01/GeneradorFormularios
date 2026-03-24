@@ -54,21 +54,33 @@
             android:orientation="horizontal">
 
             <Button
+                android:id="@+id/btnIrAContestar"
+                android:layout_width="128dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:backgroundTint="#FFC107"
+                android:text="Ir a Contestar"
+                android:textColor="#100F0F"
+                android:textSize="12sp" />
+
+            <Button
                 android:id="@+id/btnExportarPKM"
                 android:layout_width="128dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:backgroundTint="#3F51B5"
+                android:backgroundTint="#FFC107"
                 android:text="Guardar como .pkm"
+                android:textColor="#100F0F"
                 android:textSize="12sp" />
 
             <Button
-                android:id="@+id/btnCargarPKM"
+                android:id="@+id/btnCargarArchivo"
                 android:layout_width="130dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:backgroundTint="#3F51B5"
-                android:text="Cargar Archivo .pkm"
+                android:backgroundTint="#FFC107"
+                android:text="Cargar Archivo"
+                android:textColor="@color/black"
                 android:textSize="12sp" />
 
         </LinearLayout>
