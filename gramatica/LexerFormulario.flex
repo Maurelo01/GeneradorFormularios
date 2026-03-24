@@ -395,6 +395,11 @@ ColorHSL = <{EspaciosEnBlanco}*{Entero}{EspaciosEnBlanco}*,{EspaciosEnBlanco}*{E
     return symbol(sym.NOT, yytext());
 }
 
+"~" 
+{
+    return symbol(sym.NOT, yytext());
+}
+
 "="
 {
     return symbol(sym.IGUAL_ASIG, yytext());
