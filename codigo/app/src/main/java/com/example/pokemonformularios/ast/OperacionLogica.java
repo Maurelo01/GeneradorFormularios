@@ -7,19 +7,25 @@ public class OperacionLogica implements Expresion
     private Expresion izq;
     private String operador;
     private Expresion der;
+    private int linea;
+    private int columna;
 
-    public OperacionLogica(Expresion izq, String operador, Expresion der)
+    public OperacionLogica(Expresion izq, String operador, Expresion der, int linea, int columna)
     {
         this.izq = izq;
         this.operador = operador;
         this.der = der;
+        this.linea = linea;
+        this.columna = columna;
     }
 
-    public OperacionLogica(String operador, Expresion der)
+    public OperacionLogica(String operador, Expresion der, int linea, int columna)
     {
         this.izq = null;
         this.operador = operador;
         this.der = der;
+        this.linea = linea;
+        this.columna = columna;
     }
 
     @Override
@@ -32,7 +38,7 @@ public class OperacionLogica implements Expresion
             {
                 String mensaje = "No se pueden combinar diferentes operadores lógicos (&& y ||) en la misma expresión.";
                 System.err.println("Error Semántico: " + mensaje);
-                ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, 0, 0));
+                ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, linea, columna));
                 return 0.0;
             }
         }
@@ -43,7 +49,7 @@ public class OperacionLogica implements Expresion
             {
                 String mensaje = "No se pueden combinar diferentes operadores lógicos (&& y ||) en la misma expresión.";
                 System.err.println("Error Semántico: " + mensaje);
-                ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, 0, 0));
+                ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, linea, columna));
                 return 0.0;
             }
         }
@@ -70,7 +76,7 @@ public class OperacionLogica implements Expresion
         }
         String mensaje = "Los operadores lógicos requieren números u operaciones relacionales.";
         System.err.println("Error Semántico: " + mensaje);
-        ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, 0, 0));
+        ent.getErroresSemanticos().add(new ErrorCompi("Semántico", mensaje, linea, columna));
         return 0.0;
     }
 

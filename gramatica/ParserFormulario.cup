@@ -261,19 +261,19 @@ instruccion ::=
 declaracion ::=
     TYPE_NUMBER ID:id IGUAL_ASIG expresion:e
     {:
-        RESULT = new Declaracion("number", id, e);
+        RESULT = new Declaracion("number", id.toString(), e, idleft, idright);
     :}
     | TYPE_NUMBER ID:id
     {:
-        RESULT = new Declaracion("number", id, null);
+        RESULT = new Declaracion("number", id.toString(), null, idleft, idright);
     :}
     | TYPE_STRING ID:id IGUAL_ASIG expresion:e
     {:
-        RESULT = new Declaracion("string", id, e);
+        RESULT = new Declaracion("string", id.toString(), e, idleft, idright);
     :}
     | TYPE_STRING ID:id
     {:
-        RESULT = new Declaracion("string", id, null);
+        RESULT = new Declaracion("string", id.toString(), null, idleft, idright);
     :}
     | TYPE_SPECIAL ID:id IGUAL_ASIG componente:c
     {:
@@ -296,7 +296,7 @@ declaracion ::=
 asignacion ::=
     ID:id IGUAL_ASIG expresion:e
     {:
-        RESULT = new Asignacion(id, e);
+        RESULT = new Asignacion(id.toString(), e, idleft, idright);
     :}
     | ID:id IGUAL_ASIG error
     {:
@@ -698,15 +698,15 @@ expresion ::=
     :}
     | expresion:e1 AND expresion:e2
     {:
-        RESULT = new OperacionLogica(e1, "&&", e2);
+        RESULT = new OperacionLogica(e1, "&&", e2, e1left, e1right);
     :}
     | expresion:e1 OR expresion:e2
     {:
-        RESULT = new OperacionLogica(e1, "||", e2);
+        RESULT = new OperacionLogica(e1, "||", e2, e1left, e1right);
     :}
-    | NOT expresion:e
+    | NOT:n expresion:e
     {:
-        RESULT = new OperacionLogica("~", e);
+        RESULT = new OperacionLogica("~", e, nleft, nright);
     :}
     | MENOS expresion:e
     {:
