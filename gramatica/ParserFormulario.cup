@@ -203,7 +203,6 @@ non terminal Instruccion funcion_especial;
 // De menor a mayor precedencia
 precedence left OR;
 precedence left AND;
-precedence right NOT;
 precedence left IGUALDAD;
 precedence left DIFERENTE;
 precedence left MENOR;
@@ -214,8 +213,9 @@ precedence left MAS;
 precedence left MENOS;
 precedence left POR;
 precedence left DIV;
-precedence left POTENCIA;
 precedence left MODULO;
+precedence right POTENCIA;
+precedence right NOT;
 
 /***** PUNTO DE INICIO *****/
 start with inicio;
