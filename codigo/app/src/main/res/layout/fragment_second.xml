@@ -4,12 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="	#a82028"
     tools:context=".SecondFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#9C9C9C"
+        android:background="#a8b8c8"
         android:orientation="vertical"
         android:padding="16dp">
 
@@ -20,10 +21,11 @@
 
             <Button
                 android:id="@+id/btnVolver"
-                android:layout_width="194dp"
+                android:layout_width="164dp"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#F44336"
-                android:text="Regresar" />
+                android:backgroundTint="#c85048"
+                android:text="Regresar"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/textView9"
@@ -33,20 +35,22 @@
 
             <Button
                 android:id="@+id/btnCargarPKMContestar"
-                android:layout_width="wrap_content"
+                android:layout_width="222dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:backgroundTint="#4CAF50"
-                android:text="Cargar Archivo .pkm" />
+                android:backgroundTint="#ffde00"
+                android:text="Cargar Archivo .pkm"
+                android:textColor="#8A7C1C"
+                android:textStyle="bold" />
         </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/contenedorLimpio"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#FFFFFF"
-                android:orientation="vertical"
-                android:padding="24dp" />
+        <LinearLayout
+            android:id="@+id/contenedorLimpio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#f0f0f8"
+            android:orientation="vertical"
+            android:padding="24dp" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
